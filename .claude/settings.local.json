@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(taskkill:*)",
+      "Bash(tasklist:*)",
+      "Bash(netstat:*)",
+      "Bash(wmic process:*)",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}
