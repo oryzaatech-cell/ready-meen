@@ -10,18 +10,21 @@ import addressRoutes from './routes/addresses.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS — allow all 3 frontend PWAs
+// CORS — allow frontend origins from environment variables or localhost defaults
 const allowedOrigins = [
-  'http://localhost:3000', // customer
-  'http://localhost:3001', // vendor
-  'http://localhost:3002', // admin
-  'http://localhost:3003',
-  'http://localhost:3004',
-  'http://localhost:3005',
-];
+  process.env.FRONTEND_URL,
+  process.env.VENDOR_URL,
+  process.env.ADMIN_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+].filter(Boolean);
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps or curl) 
+    // or if the origin is in our allowed list
+    if (!origin || allowedOrigins.some(allowed => origin.startsWith(allowed))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
