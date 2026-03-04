@@ -20,7 +20,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
-  'https://ready-meen-customer.vercel.app',
+  'https://ready-mean-customer.vercel.app',
   'https://ready-meen-vendor.vercel.app',
   'https://ready-meen-admin.vercel.app',
 ].filter(Boolean);
