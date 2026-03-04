@@ -14,15 +14,13 @@ export const CUTTING_TYPES = [
 ];
 
 export const STATUS_FLOW = {
-  placed: 'accepted',
-  accepted: 'processing',
+  placed: 'processing',
   processing: 'ready',
   ready: 'delivered',
 };
 
 export const STATUS_LABELS = {
   placed: 'Order Placed',
-  accepted: 'Accepted',
   processing: 'Processing',
   ready: 'Ready for Pickup/Delivery',
   delivered: 'Delivered',
@@ -31,14 +29,13 @@ export const STATUS_LABELS = {
 
 export const STATUS_COLORS = {
   placed: 'yellow',
-  accepted: 'blue',
   processing: 'orange',
   ready: 'green',
   delivered: 'emerald',
   cancelled: 'red',
 };
 
-export const TIMELINE_STEPS = ['placed', 'accepted', 'processing', 'ready', 'delivered'];
+export const TIMELINE_STEPS = ['placed', 'processing', 'ready', 'delivered'];
 
 export const USER_ROLES = {
   CUSTOMER: 'customer',

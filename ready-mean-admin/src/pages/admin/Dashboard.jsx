@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Users, Store, ClipboardList, IndianRupee, TrendingUp, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Users, Store, ClipboardList, IndianRupee, TrendingUp, ArrowRight, Percent } from 'lucide-react';
 import {
   AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -18,7 +18,6 @@ import { STATUS_LABELS, FISH_CATEGORIES } from '../../shared/constants';
 
 const PIE_COLORS = {
   placed: '#EAB308',
-  accepted: '#3B82F6',
   processing: '#F97316',
   ready: '#22C55E',
   delivered: '#10B981',
@@ -32,6 +31,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { get } = useApi();
+  const navigate = useNavigate();
 
   useEffect(() => {
     get('/admin/analytics/detailed')
@@ -62,6 +62,7 @@ export default function AdminDashboard() {
     { icon: Store, label: 'Vendors', value: summary.total_vendors, gradient: 'green', link: '/vendors' },
     { icon: ClipboardList, label: 'Total Orders', value: summary.total_orders, gradient: 'orange', link: '/orders' },
     { icon: IndianRupee, label: 'Revenue', value: formatCurrency(summary.total_revenue), gradient: 'purple', link: '/analytics' },
+    { icon: Percent, label: 'Platform Earnings', value: formatCurrency(summary.total_commission || 0), gradient: 'pink', link: '/analytics' },
   ];
 
   const statusPieData = Object.entries(summary.orders_by_status || {}).map(([status, count]) => ({
@@ -75,7 +76,7 @@ export default function AdminDashboard() {
       <h1 className="text-xl font-bold mb-4">Admin Dashboard</h1>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {stats.map(({ icon, label, value, gradient, link }) => (
           <Link key={label} to={link}>
             <StatCard icon={icon} label={label} value={value} gradient={gradient} onClick={() => {}} />
@@ -158,7 +159,7 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {recent_orders.map((o) => (
-                  <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <tr key={o.id} onClick={() => navigate(`/orders/${o.id}`)} className="border-b last:border-0 hover:bg-gray-50 cursor-pointer">
                     <td className="py-2.5 font-medium">#{o.id}</td>
                     <td className="py-2.5">{o.user_name}</td>
                     <td className="py-2.5 font-medium">{formatCurrency(o.total_amt)}</td>

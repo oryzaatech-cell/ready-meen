@@ -2,6 +2,7 @@ import { Router } from 'express';
 import supabase from '../config/supabase.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { requireRole } from '../middleware/roleCheck.js';
+import { updateOrderStatus } from '../services/orderService.js';
 
 const router = Router();
 
@@ -163,9 +164,14 @@ router.get('/users/:id', async (req, res) => {
 
     // Stats
     const nonCancelled = orders.filter(o => o.status !== 'cancelled');
+    const deliveredOrders = orders.filter(o => o.status === 'delivered');
+    const totalSpent = nonCancelled.reduce((sum, o) => sum + (Number(o.total_amt) || 0), 0);
+    const totalCommission = deliveredOrders.reduce((sum, o) => sum + (Number(o.commission_amt) || 0), 0);
     const stats = {
       total_orders: orders.length,
-      total_spent: nonCancelled.reduce((sum, o) => sum + (Number(o.total_amt) || 0), 0),
+      total_spent: totalSpent,
+      total_commission: totalCommission,
+      platform_net: totalCommission,
     };
 
     res.json({
@@ -273,16 +279,48 @@ router.get('/vendors/:id', async (req, res) => {
 
     // Stats
     const deliveredOrders = orders.filter(o => o.status === 'delivered');
+    const totalRevenue = deliveredOrders.reduce((sum, o) => sum + (Number(o.total_amt) || 0), 0);
+    const totalCommission = deliveredOrders.reduce((sum, o) => sum + (Number(o.commission_amt) || 0), 0);
     const stats = {
       total_products: products.length,
       total_orders: orders.length,
-      total_revenue: deliveredOrders.reduce((sum, o) => sum + (Number(o.total_amt) || 0), 0),
+      total_revenue: totalRevenue,
+      total_commission: totalCommission,
+      vendor_net: totalRevenue - totalCommission,
       total_customers: customers.length,
     };
 
     res.json({ vendor, products, orders, customers, stats });
   } catch (err) {
     console.error('Admin vendor detail error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/admin/vendors/:id/commission — Set vendor commission rate
+router.put('/vendors/:id/commission', async (req, res) => {
+  try {
+    const { commission_rate } = req.body;
+    const rate = Number(commission_rate);
+
+    if (isNaN(rate) || rate < 0 || rate > 100) {
+      return res.status(400).json({ error: 'commission_rate must be between 0 and 100' });
+    }
+
+    const { data, error } = await supabase
+      .from('vendor_info')
+      .update({ commission_rate: rate })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Vendor not found' });
+    }
+
+    res.json({ vendor: data });
+  } catch (err) {
+    console.error('Admin set commission error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -447,6 +485,7 @@ router.get('/analytics/detailed', async (req, res) => {
     // Summary
     const deliveredOrders = orders.filter(o => o.status === 'delivered');
     const totalRevenue = deliveredOrders.reduce((sum, o) => sum + (Number(o.total_amt) || 0), 0);
+    const totalCommission = deliveredOrders.reduce((sum, o) => sum + (Number(o.commission_amt) || 0), 0);
     const ordersByStatus = orders.reduce((acc, o) => {
       acc[o.status] = (acc[o.status] || 0) + 1;
       return acc;
@@ -455,6 +494,7 @@ router.get('/analytics/detailed', async (req, res) => {
 
     const summary = {
       total_revenue: totalRevenue,
+      total_commission: totalCommission,
       total_orders: orders.length,
       total_users: totalUsersRes.count || 0,
       total_vendors: totalVendorsRes.count || 0,
@@ -576,14 +616,16 @@ router.get('/analytics', async (req, res) => {
     const [usersResult, vendorsResult, ordersResult] = await Promise.all([
       supabase.from('user_info').select('id', { count: 'exact', head: true }),
       supabase.from('vendor_info').select('id', { count: 'exact', head: true }),
-      supabase.from('order_info').select('id, total_amt, status'),
+      supabase.from('order_info').select('id, total_amt, status, commission_amt'),
     ]);
 
     const allOrders = ordersResult.data || [];
+    const deliveredOrders = allOrders.filter(o => o.status === 'delivered');
 
-    const totalRevenue = allOrders
-      .filter(o => o.status === 'delivered')
+    const totalRevenue = deliveredOrders
       .reduce((sum, o) => sum + (Number(o.total_amt) || 0), 0);
+    const totalCommission = deliveredOrders
+      .reduce((sum, o) => sum + (Number(o.commission_amt) || 0), 0);
 
     res.json({
       analytics: {
@@ -591,6 +633,7 @@ router.get('/analytics', async (req, res) => {
         total_vendors: vendorsResult.count || 0,
         total_orders: allOrders.length,
         total_revenue: totalRevenue,
+        total_commission: totalCommission,
         orders_by_status: allOrders.reduce((acc, o) => {
           acc[o.status] = (acc[o.status] || 0) + 1;
           return acc;
@@ -599,6 +642,128 @@ router.get('/analytics', async (req, res) => {
     });
   } catch (err) {
     console.error('Admin analytics error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/orders/:id — Full order detail
+router.get('/orders/:id', async (req, res) => {
+  try {
+    const { data: order, error } = await supabase
+      .from('order_info')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error || !order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Parallel fetch: items, user, vendor
+    const [itemsRes, userRes, vendorRes] = await Promise.all([
+      supabase.from('order_items').select('*').eq('order_id', order.id),
+      order.user_id
+        ? supabase.from('user_info').select('*').eq('id', order.user_id).single()
+        : Promise.resolve({ data: null }),
+      order.vendor_id
+        ? supabase.from('vendor_info').select('id, name, shop_name, phone, location').eq('id', order.vendor_id).single()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    let items = itemsRes.data || [];
+
+    // Attach product info to each item
+    if (items.length > 0) {
+      const productIds = [...new Set(items.map(i => i.product_id).filter(Boolean))];
+      const { data: products } = await supabase
+        .from('product_info')
+        .select('id, name, category, image_url')
+        .in('id', productIds);
+
+      const productMap = {};
+      for (const p of (products || [])) productMap[p.id] = p;
+
+      items = items.map(i => ({ ...i, product: productMap[i.product_id] || null }));
+    }
+
+    res.json({
+      order,
+      items,
+      user: userRes.data || null,
+      vendor: vendorRes.data || null,
+    });
+  } catch (err) {
+    console.error('Admin order detail error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/admin/orders/:id/status — Advance order status
+router.put('/orders/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ error: 'status is required' });
+    }
+
+    const result = await updateOrderStatus({ orderId: req.params.id, newStatus: status });
+
+    if (result.error) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    res.json({ order: result.order });
+  } catch (err) {
+    console.error('Admin update order status error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/products — All products across vendors
+router.get('/products', async (req, res) => {
+  try {
+    const { search, category } = req.query;
+
+    let query = supabase
+      .from('product_info')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (search) {
+      query = query.ilike('name', `%${search}%`);
+    }
+    if (category) {
+      query = query.eq('category', category);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Admin products fetch error:', error);
+      return res.status(500).json({ error: 'Failed to fetch products' });
+    }
+
+    let products = data || [];
+
+    // Attach vendor names
+    if (products.length > 0) {
+      const vendorIds = [...new Set(products.map(p => p.vendor_id).filter(Boolean))];
+      if (vendorIds.length > 0) {
+        const { data: vendors } = await supabase
+          .from('vendor_info')
+          .select('id, name')
+          .in('id', vendorIds);
+
+        const vendorMap = {};
+        for (const v of (vendors || [])) vendorMap[v.id] = v;
+
+        products = products.map(p => ({ ...p, vendor: vendorMap[p.vendor_id] || null }));
+      }
+    }
+
+    res.json({ products });
+  } catch (err) {
+    console.error('Admin products route error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

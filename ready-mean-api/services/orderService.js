@@ -60,12 +60,27 @@ export async function placeOrder({ user_id, items, shipping_address, vendor_id }
   // Determine vendor_id from the first product if not explicitly provided
   const resolvedVendorId = vendor_id || validatedItems[0]?._product?.vendor_id || null;
 
+  // Fetch vendor's commission rate and snapshot it
+  let commissionRate = 0;
+  let commissionAmt = 0;
+  if (resolvedVendorId) {
+    const { data: vendorData } = await supabase
+      .from('vendor_info')
+      .select('commission_rate')
+      .eq('id', resolvedVendorId)
+      .single();
+    commissionRate = Number(vendorData?.commission_rate) || 0;
+    commissionAmt = Math.round(totalAmt * (commissionRate / 100) * 100) / 100;
+  }
+
   // Create order
   const orderData = {
     user_id,
     status: 'placed',
     total_amt: totalAmt,
     shipping_address,
+    commission_rate: commissionRate,
+    commission_amt: commissionAmt,
   };
   if (resolvedVendorId) {
     orderData.vendor_id = resolvedVendorId;

@@ -27,6 +27,10 @@ export default function Checkout() {
   const [addingSaving, setAddingSaving] = useState(false);
 
   useEffect(() => {
+    if (items.length === 0) {
+      navigate('/cart', { replace: true });
+      return;
+    }
     loadAddresses();
   }, []);
 
@@ -46,7 +50,6 @@ export default function Checkout() {
   }
 
   if (items.length === 0) {
-    navigate('/cart');
     return null;
   }
 

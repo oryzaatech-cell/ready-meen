@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ClipboardList, Search, IndianRupee, ShoppingCart, TrendingUp } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
@@ -10,6 +11,7 @@ import formatCurrency from '../../shared/formatCurrency';
 import { getDateRange, formatDate } from '../../shared/dateUtils';
 
 export default function AdminOrders() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -95,7 +97,7 @@ export default function AdminOrders() {
 
       {/* Status Filter Pills */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 no-scrollbar">
-        {['', 'placed', 'accepted', 'processing', 'ready', 'delivered', 'cancelled'].map((s) => (
+        {['', 'placed', 'processing', 'ready', 'delivered', 'cancelled'].map((s) => (
           <button
             key={s}
             onClick={() => handleStatusChange(s)}
@@ -134,17 +136,21 @@ export default function AdminOrders() {
                 <th className="px-4 py-3 font-medium">Customer</th>
                 <th className="px-4 py-3 font-medium">Items</th>
                 <th className="px-4 py-3 font-medium">Total</th>
+                <th className="px-4 py-3 font-medium">Commission</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Date</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((o, i) => (
-                <tr key={o.id} className={`border-b last:border-0 hover:bg-gray-50 ${i % 2 === 1 ? 'bg-gray-50/50' : ''}`}>
+                <tr key={o.id} onClick={() => navigate(`/orders/${o.id}`)} className={`border-b last:border-0 hover:bg-gray-50 cursor-pointer ${i % 2 === 1 ? 'bg-gray-50/50' : ''}`}>
                   <td className="px-4 py-3 font-medium">#{o.id}</td>
                   <td className="px-4 py-3">{o.user?.name || `#${o.user_id}`}</td>
                   <td className="px-4 py-3">{o.order_items?.length || 0}</td>
                   <td className="px-4 py-3 font-medium">{formatCurrency(o.total_amt)}</td>
+                  <td className="px-4 py-3 text-pink-600">
+                    {Number(o.commission_amt) > 0 ? `${formatCurrency(o.commission_amt)} (${o.commission_rate}%)` : '-'}
+                  </td>
                   <td className="px-4 py-3"><OrderStatusBadge status={o.status} /></td>
                   <td className="px-4 py-3 text-gray-500">{formatDate(o.created_at)}</td>
                 </tr>

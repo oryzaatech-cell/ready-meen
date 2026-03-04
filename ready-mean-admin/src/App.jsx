@@ -12,6 +12,8 @@ const Orders = lazy(() => import('./pages/admin/Orders'));
 const Analytics = lazy(() => import('./pages/admin/Analytics'));
 const VendorDetail = lazy(() => import('./pages/admin/VendorDetail'));
 const UserDetail = lazy(() => import('./pages/admin/UserDetail'));
+const OrderDetail = lazy(() => import('./pages/admin/OrderDetail'));
+const Products = lazy(() => import('./pages/admin/Products'));
 
 function PageLoader() {
   return (
@@ -35,6 +37,8 @@ export default function App() {
         <Route path="/vendors/:id" element={<ProtectedRoute><VendorDetail /></ProtectedRoute>} />
         <Route path="/users/:id" element={<ProtectedRoute><UserDetail /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+        <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

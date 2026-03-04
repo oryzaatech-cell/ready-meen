@@ -35,6 +35,8 @@ export default function ProductDetail() {
     return <PageLayout><div className="text-center py-12 text-gray-500">Product not found</div></PageLayout>;
   }
 
+  const soldOut = !product.stock_qty || product.stock_qty <= 0;
+
   // Compute effective price per kg
   let effectivePrice = product.price;
   let cuttingCharge = 0;
@@ -84,18 +86,25 @@ export default function ProductDetail() {
   return (
     <PageLayout>
       <div className="max-w-lg mx-auto space-y-6">
-        <div className="aspect-square bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+        <div className="relative aspect-square bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
           {product.image_url ? (
             <ImageZoom src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
           ) : (
             <Fish size={64} className="text-gray-300" />
+          )}
+          {soldOut && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-full uppercase tracking-wide">
+                Sold Out
+              </span>
+            </div>
           )}
         </div>
 
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {product.vendor?.name} &middot; {product.stock_qty} kg available
+            {product.vendor?.name} &middot; {soldOut ? <span className="text-red-500 font-semibold">Sold Out</span> : `${product.stock_qty} kg available`}
           </p>
           {product.description && (
             <p className="text-sm text-gray-600 mt-2">{product.description}</p>
@@ -200,16 +209,23 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div>
-            <div className="text-sm text-gray-500">Total</div>
-            <div className="text-2xl font-bold text-primary-700">{formatCurrency(total)}</div>
+        {soldOut ? (
+          <div className="pt-4 border-t text-center">
+            <p className="text-red-500 font-semibold">This product is currently sold out</p>
+            <p className="text-xs text-gray-400 mt-1">Check back later for fresh stock</p>
           </div>
-          <Button onClick={handleAddToCart} size="lg">
-            <ShoppingCart size={18} className="mr-2" />
-            Add to Cart
-          </Button>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div>
+              <div className="text-sm text-gray-500">Total</div>
+              <div className="text-2xl font-bold text-primary-700">{formatCurrency(total)}</div>
+            </div>
+            <Button onClick={handleAddToCart} size="lg">
+              <ShoppingCart size={18} className="mr-2" />
+              Add to Cart
+            </Button>
+          </div>
+        )}
       </div>
     </PageLayout>
   );

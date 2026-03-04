@@ -83,3 +83,8 @@ CREATE TABLE IF NOT EXISTS customer_addresses (
 );
 ALTER TABLE customer_addresses DISABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_customer_addresses_user ON customer_addresses(user_id);
+
+-- 8. Commission / platform fee columns
+ALTER TABLE vendor_info ADD COLUMN IF NOT EXISTS commission_rate numeric DEFAULT 0;
+ALTER TABLE order_info ADD COLUMN IF NOT EXISTS commission_rate numeric DEFAULT 0;
+ALTER TABLE order_info ADD COLUMN IF NOT EXISTS commission_amt numeric DEFAULT 0;

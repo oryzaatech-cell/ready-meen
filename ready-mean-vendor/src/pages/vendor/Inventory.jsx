@@ -38,43 +38,63 @@ export default function VendorProducts() {
 
   return (
     <PageLayout>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold">My Products</h1>
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="text-xl font-bold text-gray-900">My Products</h1>
         <Link to="/products/add">
           <Button size="sm">
-            <PlusCircle size={16} className="mr-1" /> Add Product
+            <PlusCircle size={16} className="mr-1.5" /> Add Product
           </Button>
         </Link>
       </div>
+      <p className="text-sm text-gray-500 mb-4">{products.length} product{products.length !== 1 ? 's' : ''} listed</p>
 
       {products.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Package size={32} className="mx-auto mb-2 text-gray-300" />
-          <p>No products yet</p>
-          <p className="text-xs mt-1">Add your fish products to start receiving orders</p>
+        <div className="text-center py-16">
+          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Package size={28} className="text-gray-400" />
+          </div>
+          <p className="font-medium text-gray-600">No products yet</p>
+          <p className="text-sm text-gray-400 mt-1 mb-4">Add your fish products to start receiving orders</p>
+          <Link to="/products/add">
+            <Button size="sm">
+              <PlusCircle size={16} className="mr-1.5" /> Add Your First Product
+            </Button>
+          </Link>
         </div>
       ) : (
         <div className="space-y-2">
           {products.map((product) => (
-            <Card key={product.id} className="p-4 flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <Card key={product.id} className={`p-4 flex items-center gap-3 ${product.stock_qty <= 0 ? 'opacity-70' : ''}`}>
+              <div className="relative w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden ring-1 ring-gray-200/60">
                 {product.image_url ? (
-                  <ImageZoom src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                  <ImageZoom src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-xl" />
                 ) : (
-                  <Fish size={20} className="text-gray-300" />
+                  <Fish size={22} className="text-gray-300" />
+                )}
+                {product.stock_qty <= 0 && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl">
+                    <span className="text-[8px] font-bold text-white uppercase">Sold</span>
+                  </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-sm truncate">{product.name}</h3>
-                <p className="text-xs text-gray-500">
-                  {product.category || 'Uncategorized'} &middot; {product.stock_qty} kg in stock
-                </p>
+                <h3 className="font-semibold text-sm text-gray-900 truncate">{product.name}</h3>
+                {product.stock_qty > 0 ? (
+                  <p className="text-xs mt-0.5">
+                    <span className="font-medium text-emerald-600">{product.stock_qty} kg</span>
+                    <span className="text-gray-500"> in stock</span>
+                  </p>
+                ) : (
+                  <p className="text-xs mt-0.5">
+                    <span className="font-semibold text-red-500">Sold Out</span>
+                  </p>
+                )}
               </div>
-              <div className="text-right">
-                <span className="text-sm font-semibold text-primary-700">
+              <div className="text-right flex-shrink-0">
+                <span className="text-sm font-bold text-gray-900">
                   {formatCurrency(product.price)}
                 </span>
-                <span className="text-xs text-gray-500">/kg</span>
+                <span className="text-xs text-gray-400">/kg</span>
               </div>
             </Card>
           ))}

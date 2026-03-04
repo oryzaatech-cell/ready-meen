@@ -5,34 +5,30 @@ import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
 import ProductCard from '../../components/ProductCard';
 import Spinner from '../../components/ui/Spinner';
-import { FISH_CATEGORIES } from '../../shared/constants';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState('');
   const [search, setSearch] = useState('');
   const { get } = useApi();
   const navigate = useNavigate();
 
   useEffect(() => {
     loadProducts();
-  }, [category]);
+  }, []);
 
   // Re-fetch when user navigates back to this page
   useEffect(() => {
     const handleFocus = () => loadProducts();
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [category]);
+  }, []);
 
   async function loadProducts() {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (category) params.set('category', category);
-      const { products: data } = await get(`/products?${params}`);
-      setProducts((data || []).filter(p => p.stock_qty > 0));
+      const { products: data } = await get('/products');
+      setProducts(data || []);
     } catch (err) {
       console.error('Failed to load products:', err);
     } finally {
@@ -56,28 +52,6 @@ export default function Home() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          <button
-            onClick={() => setCategory('')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-              !category ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            All
-          </button>
-          {FISH_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                category === cat.id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
         </div>
 
         {loading ? (

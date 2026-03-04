@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ImagePlus, X, Check, Scissors, Sparkles, Plus as PlusIcon, ZoomIn, ZoomOut } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ImagePlus, X, Check, Scissors, Sparkles, Plus as PlusIcon, ZoomIn, ZoomOut, ArrowLeft } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
@@ -56,7 +56,6 @@ export default function AddProduct() {
   const [cleaningCharge, setCleaningCharge] = useState('');
 
   // Cutting options — dynamic list of { name, charge }
-  // Pre-populate from previously saved cut types
   const [cuttingOptions, setCuttingOptions] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(SAVED_CUTS_KEY));
@@ -68,9 +67,9 @@ export default function AddProduct() {
   });
 
   // Image states
-  const [rawImage, setRawImage] = useState(null); // original selected image URL
-  const [croppedBlob, setCroppedBlob] = useState(null); // final cropped blob
-  const [croppedPreview, setCroppedPreview] = useState(null); // preview URL of cropped image
+  const [rawImage, setRawImage] = useState(null);
+  const [croppedBlob, setCroppedBlob] = useState(null);
+  const [croppedPreview, setCroppedPreview] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -182,8 +181,8 @@ export default function AddProduct() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !price) {
-      setError('Name and price are required');
+    if (!name || !price || !stockQty) {
+      setError('Fish name, price and stock quantity are required');
       return;
     }
 
@@ -197,7 +196,6 @@ export default function AddProduct() {
         setUploading(false);
       }
 
-      // Build cutting_options array from vendor-defined cuts
       const cuttingArr = cuttingOptions
         .filter(c => c.name.trim() && c.charge)
         .map(c => ({ type: c.name.trim(), charge: parseFloat(c.charge) }));
@@ -212,7 +210,6 @@ export default function AddProduct() {
         cutting_options: cuttingArr.length > 0 ? cuttingArr : null,
       });
 
-      // Remember cut types for future products
       const cutsToSave = cuttingOptions
         .filter(c => c.name.trim())
         .map(c => ({ name: c.name.trim(), charge: c.charge }));
@@ -232,53 +229,65 @@ export default function AddProduct() {
   return (
     <PageLayout>
       <div className="max-w-md mx-auto">
-        <h1 className="text-xl font-bold mb-4">Add Product</h1>
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-5">
+          <Link to="/products" className="p-2 -ml-2 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors">
+            <ArrowLeft size={20} className="text-gray-600" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Add Product</h1>
+            <p className="text-xs text-gray-500 mt-0.5">Add a new fish product to your store</p>
+          </div>
+        </div>
 
-        <Card className="p-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              label="Fish Name"
-              placeholder="e.g. King Fish, Pomfret"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
-              <textarea
-                placeholder="Brief description..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+        <Card className="p-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Basic Info Section */}
+            <div className="space-y-4">
+              <Input
+                label="Fish Name"
+                placeholder="e.g. King Fish, Pomfret"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description (optional)</label>
+                <textarea
+                  placeholder="Brief description..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={2}
+                  className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-base bg-gray-50/50 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
+                />
+              </div>
             </div>
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Product Image (optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Product Image (optional)</label>
               {croppedPreview ? (
-                <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100 group">
+                <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-100 group ring-1 ring-gray-200/60">
                   <img
                     src={croppedPreview}
                     alt="Preview"
                     className="w-full h-full object-cover cursor-zoom-in transition-transform duration-200 group-hover:scale-[1.02]"
                     onClick={openLightbox}
                   />
-                  <div className="absolute top-2 right-2 flex gap-1">
+                  <div className="absolute top-2 right-2 flex gap-1.5">
                     <button
                       type="button"
                       onClick={() => setShowCropper(true)}
-                      className="px-2 py-1 bg-black/50 rounded-lg text-white text-xs hover:bg-black/70"
+                      className="px-2.5 py-1.5 bg-black/50 backdrop-blur-sm rounded-lg text-white text-xs font-medium hover:bg-black/70 transition-colors"
                     >
                       Re-crop
                     </button>
                     <button
                       type="button"
                       onClick={removeImage}
-                      className="p-1 bg-black/50 rounded-full text-white hover:bg-black/70"
+                      className="p-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
                     >
-                      <X size={16} />
+                      <X size={14} />
                     </button>
                   </div>
                 </div>
@@ -286,10 +295,10 @@ export default function AddProduct() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-28 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-primary-400 hover:text-primary-500 transition-colors"
+                  className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-emerald-400 hover:text-emerald-500 hover:bg-emerald-50/30 transition-all duration-200"
                 >
                   <ImagePlus size={28} />
-                  <span className="text-xs mt-1">Tap to add image</span>
+                  <span className="text-xs font-medium mt-1.5">Tap to add image</span>
                 </button>
               )}
               <input
@@ -301,37 +310,39 @@ export default function AddProduct() {
               />
             </div>
 
-            <Input
-              label="Price per kg (INR)"
-              type="number"
-              step="0.5"
-              min="0"
-              placeholder="e.g. 450"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-
-            <Input
-              label="Stock Quantity (kg)"
-              type="number"
-              step="0.5"
-              min="0"
-              placeholder="e.g. 25"
-              value={stockQty}
-              onChange={(e) => setStockQty(e.target.value)}
-            />
+            {/* Pricing */}
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Price per kg"
+                type="number"
+                step="0.5"
+                min="0"
+                placeholder="₹ 450"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+              <Input
+                label="Stock (kg)"
+                type="number"
+                step="0.5"
+                min="0"
+                placeholder="25"
+                value={stockQty}
+                onChange={(e) => setStockQty(e.target.value)}
+              />
+            </div>
 
             {/* Cleaning Option */}
-            <div className="border rounded-lg p-3 space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+              <label className="flex items-center gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={cleaningEnabled}
                   onChange={(e) => setCleaningEnabled(e.target.checked)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  className="w-4.5 h-4.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                 />
                 <Sparkles size={16} className="text-blue-500" />
-                <span className="text-sm font-medium">Cleaning available</span>
+                <span className="text-sm font-semibold text-gray-900">Cleaning available</span>
               </label>
               {cleaningEnabled && (
                 <Input
@@ -347,29 +358,29 @@ export default function AddProduct() {
             </div>
 
             {/* Cutting Options */}
-            <div className="border rounded-lg p-3 space-y-3">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2.5 mb-1">
                 <Scissors size={16} className="text-orange-500" />
-                <span className="text-sm font-medium">Cutting options</span>
+                <span className="text-sm font-semibold text-gray-900">Cutting options</span>
               </div>
               <p className="text-xs text-gray-500">"Whole Fish" is always available at base price. Add your custom cut types below.</p>
               {cuttingOptions.map((cut, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <div className="flex-1">
                     <Input
-                      placeholder="Cut name (e.g. Steaks, Fillets)"
+                      placeholder="Cut name (e.g. Steaks)"
                       value={cut.name}
                       onChange={(e) =>
                         setCuttingOptions(prev => prev.map((c, i) => i === idx ? { ...c, name: e.target.value } : c))
                       }
                     />
                   </div>
-                  <div className="w-28">
+                  <div className="w-24">
                     <Input
                       type="number"
                       step="1"
                       min="0"
-                      placeholder="INR/kg"
+                      placeholder="₹/kg"
                       value={cut.charge}
                       onChange={(e) =>
                         setCuttingOptions(prev => prev.map((c, i) => i === idx ? { ...c, charge: e.target.value } : c))
@@ -379,7 +390,7 @@ export default function AddProduct() {
                   <button
                     type="button"
                     onClick={() => setCuttingOptions(prev => prev.filter((_, i) => i !== idx))}
-                    className="mt-1.5 p-1.5 text-gray-400 hover:text-red-500"
+                    className="mt-2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <X size={16} />
                   </button>
@@ -388,16 +399,20 @@ export default function AddProduct() {
               <button
                 type="button"
                 onClick={() => setCuttingOptions(prev => [...prev, { name: '', charge: '' }])}
-                className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 font-semibold transition-colors"
               >
                 <PlusIcon size={15} />
                 Add cut type
               </button>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <div className="bg-red-50 text-red-600 text-sm px-3 py-2.5 rounded-xl border border-red-100">
+                {error}
+              </div>
+            )}
 
-            <Button type="submit" loading={loading} className="w-full">
+            <Button type="submit" loading={loading} className="w-full" size="lg">
               {uploading ? 'Uploading image...' : 'Add Product'}
             </Button>
           </form>
@@ -407,10 +422,9 @@ export default function AddProduct() {
       {/* Image Lightbox */}
       {showLightbox && croppedPreview && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
           onClick={(e) => { if (e.target === e.currentTarget) setShowLightbox(false); }}
         >
-          {/* Top bar */}
           <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 z-10">
             <span className="text-white/70 text-sm font-medium">Product Preview</span>
             <button
@@ -422,7 +436,6 @@ export default function AddProduct() {
             </button>
           </div>
 
-          {/* Image */}
           <div
             className="w-full h-full flex items-center justify-center overflow-hidden select-none"
             onPointerDown={handleLightboxPointerDown}
@@ -434,7 +447,7 @@ export default function AddProduct() {
             <img
               src={croppedPreview}
               alt="Product zoom"
-              className="max-w-[90vw] max-h-[80vh] rounded-lg shadow-2xl transition-transform duration-200 ease-out"
+              className="max-w-[90vw] max-h-[80vh] rounded-2xl shadow-2xl transition-transform duration-200 ease-out"
               style={{
                 transform: `scale(${lightboxZoom}) translate(${lightboxPos.x / lightboxZoom}px, ${lightboxPos.y / lightboxZoom}px)`,
                 cursor: lightboxZoom > 1 ? 'grab' : 'default',
@@ -443,7 +456,6 @@ export default function AddProduct() {
             />
           </div>
 
-          {/* Bottom controls */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
             <button
               type="button"
@@ -480,7 +492,7 @@ export default function AddProduct() {
               onCropComplete={onCropComplete}
             />
           </div>
-          <div className="bg-black p-4 space-y-3">
+          <div className="bg-black p-4 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
             <div className="flex items-center gap-3">
               <span className="text-white text-xs w-12">Zoom</span>
               <input
@@ -490,21 +502,21 @@ export default function AddProduct() {
                 step={0.1}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
-                className="flex-1 accent-primary-500"
+                className="flex-1 accent-emerald-500"
               />
             </div>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => { setShowCropper(false); if (!croppedBlob) removeImage(); }}
-                className="flex-1 py-2.5 rounded-lg bg-gray-700 text-white text-sm font-medium"
+                className="flex-1 py-3 rounded-xl bg-gray-700 text-white text-sm font-semibold active:bg-gray-800 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleCropDone}
-                className="flex-1 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium flex items-center justify-center gap-1"
+                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:bg-emerald-700 transition-colors"
               >
                 <Check size={18} />
                 Done

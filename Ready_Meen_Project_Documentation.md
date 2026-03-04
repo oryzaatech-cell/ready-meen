@@ -72,7 +72,7 @@ Customer browses products --> Auto-filtered to linked vendor's products
          |
          v
 Customer places order --> vendor_id stored on order
-         |
+         |                  commission_rate & commission_amt snapshotted from vendor
          v
 Vendor sees order on dashboard --> Advances status: placed -> accepted -> processing -> ready -> delivered
 ```
@@ -92,6 +92,7 @@ Vendor sees order on dashboard --> Advances status: placed -> accepted -> proces
 | auth_id | uuid | Links to Supabase auth.users |
 | is_admin | boolean | Admin flag (default: false) |
 | vendor_id | integer (FK) | Links customer to a specific vendor |
+| mobile | text | Mobile number (used for mobile-based registration) |
 | created_at | timestamp | Registration date |
 
 #### vendor_info (Fish Vendors)
@@ -105,6 +106,7 @@ Vendor sees order on dashboard --> Advances status: placed -> accepted -> proces
 | shop_name | text | Store display name |
 | location | text | Store location |
 | vendor_code | text (UNIQUE) | 6-char invite code (e.g., FH3K9X) |
+| commission_rate | numeric | Platform commission percentage (0-100), set by admin |
 | created_at | timestamp | Registration date |
 
 #### product_info (Products)
@@ -128,6 +130,8 @@ Vendor sees order on dashboard --> Advances status: placed -> accepted -> proces
 | vendor_id | uuid (FK) | Vendor who fulfills the order |
 | status | text | placed / accepted / processing / ready / delivered / cancelled |
 | total_amt | numeric | Total order amount (INR) |
+| commission_rate | numeric | Snapshot of vendor's commission % at order time |
+| commission_amt | numeric | Platform fee = total_amt * commission_rate / 100 |
 | shipping_address | text | Delivery address |
 | created_at | timestamp | Order placement date |
 
@@ -138,7 +142,23 @@ Vendor sees order on dashboard --> Advances status: placed -> accepted -> proces
 | order_id | uuid (FK) | Parent order |
 | product_id | uuid (FK) | Product ordered |
 | qty | numeric | Quantity (kg) |
-| price | numeric | Price at time of order |
+| price | numeric | Effective price at time of order (includes cutting/cleaning charges) |
+| cutting_type | text | Cutting preference (whole / fillet / etc.) |
+| cleaning | boolean | Whether cleaning was requested |
+
+#### customer_addresses (Saved Addresses)
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint (PK) | Auto-generated ID |
+| user_id | bigint (FK) | Customer who owns this address |
+| label | text | Address label (e.g., Home, Work) |
+| flat_name | text | Building/flat name |
+| flat_number | text | Flat/door number |
+| floor | text | Floor |
+| area | text | Area/locality |
+| name | text | Recipient name |
+| phone | text | Recipient phone |
+| created_at | timestamp | Date added |
 
 ---
 
@@ -284,14 +304,28 @@ Step 6: Customer places order
 | PUT | /:id/status | Vendor/Admin | Advance order status |
 | PUT | /:id/cancel | Customer | Cancel order (only if status = placed) |
 
+### Address Routes (`/api/addresses`)
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | / | Customer | List customer's saved addresses |
+| POST | / | Customer | Add new address (max 3 per user) |
+| DELETE | /:id | Customer | Delete a saved address |
+
 ### Admin Routes (`/api/admin`)
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | /users | Admin | List all customers (searchable) |
+| GET | /users/:id | Admin | Single user detail with orders, addresses, stats |
+| DELETE | /users/:id | Admin | Remove a customer (cascades, deletes auth user) |
 | GET | /vendors | Admin | List vendors with customer count + vendor code |
-| GET | /orders | Admin | List all platform orders |
-| GET | /analytics | Admin | Dashboard stats (users, vendors, revenue) |
+| GET | /vendors/:id | Admin | Single vendor detail with products, orders, customers, commission stats |
+| PUT | /vendors/:id/commission | Admin | Set vendor commission rate (0-100%) |
+| DELETE | /vendors/:id | Admin | Remove a vendor (unlinks customers, deletes auth user) |
+| GET | /orders | Admin | List all platform orders (filterable by status, date, search) |
+| GET | /analytics | Admin | Dashboard stats (users, vendors, revenue, platform commission) |
+| GET | /analytics/detailed | Admin | Rich analytics with date range, daily/monthly revenue, top products/vendors, commission totals |
 
 ---
 
@@ -351,7 +385,7 @@ Step 6: Customer places order
 |-------|------|-------------|
 | /login | Login | Email/password + Google sign-in |
 | /register | Register | Signup with phone, shop name, location |
-| / | Dashboard | Stats, invite code card, recent orders |
+| / | Dashboard | Stats (active orders, products, net earnings, total orders), invite code card, recent orders |
 | /vendor/products | Inventory | List products, add new |
 | /vendor/products/add | AddInventory | Product creation form |
 | /vendor/orders | Orders | Filter by status |
@@ -363,6 +397,7 @@ Step 6: Customer places order
 - Web Share API for mobile sharing
 - Order status advancement (one-click)
 - Product inventory management (add, view)
+- Net earnings display (revenue minus platform commission) with fee percentage label
 
 ### Admin App (Port 3002)
 
@@ -370,15 +405,21 @@ Step 6: Customer places order
 | Route | Page | Description |
 |-------|------|-------------|
 | /login | Login | Email/password sign-in |
-| / | Dashboard | 4 stat cards, order breakdown |
-| /admin/users | Users | Searchable customer list |
-| /admin/vendors | Vendors | Vendor cards with code + customer count |
-| /admin/orders | Orders | All orders with status filter |
+| / | Dashboard | 5 stat cards (users, vendors, orders, revenue, platform earnings), charts, recent orders, top products/vendors |
+| /users | Users | Searchable customer list |
+| /users/:id | UserDetail | User profile, orders, addresses, stats |
+| /vendors | Vendors | Vendor cards with code + customer count |
+| /vendors/:id | VendorDetail | Vendor profile, commission rate editor, gross/commission/net stats, products/orders/customers tabs |
+| /orders | Orders | All orders with status/date/search filters |
+| /analytics | Analytics | Detailed analytics with date range, charts, category breakdown |
 
 **Key Features:**
-- Platform-wide analytics (total users, vendors, revenue)
+- Platform-wide analytics (total users, vendors, revenue, platform commission earnings)
+- Vendor commission rate management (per-vendor, editable inline)
+- Gross revenue / commission / net earnings breakdown per vendor
 - Vendor code and linked customer count display
-- Order status breakdown
+- Revenue trend charts, order status pie chart
+- Top products and top vendors leaderboards
 - Sidebar navigation
 
 ---
@@ -396,7 +437,8 @@ ready-mean-api/                    # Backend
 │   ├── auth.js                    # Registration, login, profiles
 │   ├── products.js                # Product CRUD
 │   ├── orders.js                  # Order placement + management
-│   └── admin.js                   # Admin analytics + listing
+│   ├── addresses.js               # Customer saved addresses
+│   └── admin.js                   # Admin analytics, vendor commission, user/vendor management
 ├── services/
 │   ├── orderService.js            # Order business logic
 │   └── notificationService.js     # Firebase push (optional)
@@ -450,6 +492,7 @@ ready-mean-admin/                  # Admin Frontend
 | **Vendor Code Linking** | Registration | Connects customers to vendors via invite codes |
 | **Stock Validation** | Order placement | Checks and deducts stock atomically |
 | **Status Machine** | Orders | Linear progression with validated transitions |
+| **Commission Snapshotting** | Order placement | Vendor's commission rate is copied into order at creation time; changing the rate only affects future orders |
 
 ---
 
@@ -499,6 +542,7 @@ CREATE TABLE vendor_info (
   shop_name TEXT,
   location TEXT,
   vendor_code TEXT UNIQUE,
+  commission_rate NUMERIC DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -509,6 +553,7 @@ CREATE TABLE user_info (
   auth_id UUID,
   is_admin BOOLEAN DEFAULT false,
   vendor_id INTEGER REFERENCES vendor_info(id),
+  mobile TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -530,6 +575,8 @@ CREATE TABLE order_info (
   vendor_id INTEGER REFERENCES vendor_info(id),
   status TEXT DEFAULT 'placed',
   total_amt NUMERIC DEFAULT 0,
+  commission_rate NUMERIC DEFAULT 0,
+  commission_amt NUMERIC DEFAULT 0,
   shipping_address TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -539,7 +586,22 @@ CREATE TABLE order_items (
   order_id INTEGER REFERENCES order_info(id),
   product_id INTEGER REFERENCES product_info(id),
   qty NUMERIC NOT NULL,
-  price NUMERIC NOT NULL
+  price NUMERIC NOT NULL,
+  cutting_type TEXT DEFAULT 'whole',
+  cleaning BOOLEAN DEFAULT false
+);
+
+CREATE TABLE customer_addresses (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES user_info(id) ON DELETE CASCADE,
+  label TEXT,
+  flat_name TEXT NOT NULL,
+  flat_number TEXT,
+  floor TEXT,
+  area TEXT NOT NULL,
+  name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 ```
 
@@ -557,7 +619,49 @@ CREATE TABLE order_items (
 
 ---
 
-## 14. Summary
+## 14. Vendor Commission / Platform Fee
+
+### How It Works
+
+```
+Admin sets commission rate for a vendor (e.g., 5%)
+        |
+        v
+Rate stored in vendor_info.commission_rate
+        |
+        v
+Customer places order
+        |
+        v
+Order service fetches vendor's current commission_rate
+  -> Calculates commission_amt = total_amt * (rate / 100)
+  -> Snapshots both rate and amount into order_info
+        |
+        v
+Order is immutable — changing vendor's rate later doesn't affect existing orders
+        |
+        v
+Admin sees: Gross Revenue / Commission / Net Earnings per vendor
+Vendor sees: Net Earnings with "after X% platform fee" label
+Admin dashboard shows: Total Platform Earnings across all vendors
+```
+
+### Key Design Decisions
+
+- **Snapshot at order time**: The commission rate is copied into each order when it's created. This ensures changing the rate only affects future orders.
+- **Per-vendor rates**: Each vendor can have a different commission rate (0-100%), allowing flexible pricing.
+- **Commission calculated on total order amount**: `commission_amt = total_amt * commission_rate / 100`, rounded to 2 decimal places.
+- **Only delivered orders counted**: Revenue and commission stats only include delivered orders.
+
+### Admin Controls
+
+- **Set rate**: `PUT /api/admin/vendors/:id/commission` with `{ commission_rate: 5 }`
+- **View breakdown**: Vendor detail page shows gross revenue, commission total, and vendor net earnings
+- **Platform earnings**: Admin dashboard shows total commission collected across all vendors
+
+---
+
+## 15. Summary
 
 Ready Meen is a complete **multi-vendor fish marketplace** with:
 - **3 separate React frontends** for customers, vendors, and admins
@@ -566,5 +670,7 @@ Ready Meen is a complete **multi-vendor fish marketplace** with:
 - **Vendor invite codes** linking customers to specific vendors
 - **Full order lifecycle** from placement to delivery
 - **Role-based access control** across the entire platform
+- **Per-vendor commission system** — admin sets a commission rate per vendor; the platform fee is snapshotted into each order at placement time, ensuring rate changes only affect future orders
+- **Platform earnings tracking** — admin dashboard shows total platform commission; vendor dashboard shows net earnings after fee
 
-The platform enables fish vendors to set up their online store, invite customers via unique codes, and manage orders - all through a mobile-friendly interface.
+The platform enables fish vendors to set up their online store, invite customers via unique codes, and manage orders - all through a mobile-friendly interface. The admin can monetize the platform by setting per-vendor commission rates with full transparency for both sides.

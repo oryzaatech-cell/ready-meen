@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Shield, Calendar, ShoppingCart, DollarSign, Store, MapPin, Hash } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, User, Mail, Phone, Shield, Calendar, ShoppingCart, DollarSign, Store, MapPin, Hash, Percent } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
@@ -107,7 +107,7 @@ export default function UserDetail() {
       )}
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-3 mb-4">
         <Card className="p-4 text-center">
           <ShoppingCart size={20} className="mx-auto text-orange-500 mb-1" />
           <p className="text-2xl font-bold">{stats.total_orders}</p>
@@ -117,6 +117,11 @@ export default function UserDetail() {
           <DollarSign size={20} className="mx-auto text-emerald-500 mb-1" />
           <p className="text-2xl font-bold">{formatCurrency(stats.total_spent)}</p>
           <p className="text-xs text-gray-500">Total Spent</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <Percent size={20} className="mx-auto text-pink-500 mb-1" />
+          <p className="text-2xl font-bold">{formatCurrency(stats.total_commission)}</p>
+          <p className="text-xs text-gray-500">Platform Earnings</p>
         </Card>
       </div>
 
@@ -145,6 +150,8 @@ export default function UserDetail() {
 }
 
 function OrdersTab({ orders }) {
+  const navigate = useNavigate();
+
   if (orders.length === 0) {
     return <p className="text-center py-8 text-gray-500">No orders yet</p>;
   }
@@ -154,15 +161,20 @@ function OrdersTab({ orders }) {
       {/* Mobile cards */}
       <div className="sm:hidden space-y-3">
         {orders.map((o) => (
-          <Card key={o.id} className="p-4 space-y-1.5">
+          <Card key={o.id} className="p-4 space-y-1.5 cursor-pointer" onClick={() => navigate(`/orders/${o.id}`)}>
             <div className="flex items-center justify-between">
-              <span className="font-mono text-sm text-gray-500">#{o.id?.slice(-6)}</span>
+              <span className="font-mono text-sm text-gray-500">#{String(o.id).slice(-6)}</span>
               <OrderStatusBadge status={o.status} />
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">{o.order_items?.length || 0} item(s)</span>
               <span className="font-medium">{formatCurrency(o.total_amt)}</span>
             </div>
+            {Number(o.commission_amt) > 0 && (
+              <p className="text-xs text-pink-600">
+                Commission: {formatCurrency(o.commission_amt)} ({o.commission_rate}%)
+              </p>
+            )}
             <p className="text-xs text-gray-400">
               {o.created_at ? new Date(o.created_at).toLocaleDateString() : '-'}
             </p>
@@ -178,16 +190,20 @@ function OrdersTab({ orders }) {
               <th className="pb-2 font-medium">ID</th>
               <th className="pb-2 font-medium">Items</th>
               <th className="pb-2 font-medium">Total</th>
+              <th className="pb-2 font-medium">Commission</th>
               <th className="pb-2 font-medium">Status</th>
               <th className="pb-2 font-medium">Date</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((o) => (
-              <tr key={o.id} className="border-b hover:bg-gray-50">
-                <td className="py-2.5 font-mono text-gray-500">#{o.id?.slice(-6)}</td>
+              <tr key={o.id} onClick={() => navigate(`/orders/${o.id}`)} className="border-b hover:bg-gray-50 cursor-pointer">
+                <td className="py-2.5 font-mono text-gray-500">#{String(o.id).slice(-6)}</td>
                 <td className="py-2.5 text-gray-600">{o.order_items?.length || 0}</td>
                 <td className="py-2.5 font-medium">{formatCurrency(o.total_amt)}</td>
+                <td className="py-2.5 text-pink-600">
+                  {Number(o.commission_amt) > 0 ? `${formatCurrency(o.commission_amt)} (${o.commission_rate}%)` : '-'}
+                </td>
                 <td className="py-2.5"><OrderStatusBadge status={o.status} /></td>
                 <td className="py-2.5 text-gray-500">
                   {o.created_at ? new Date(o.created_at).toLocaleDateString() : '-'}

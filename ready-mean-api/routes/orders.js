@@ -62,7 +62,7 @@ router.get('/', authenticateUser, async (req, res) => {
 
     let orders = data || [];
 
-    // Attach order_items to each order
+    // Attach order_items and user info to each order
     if (orders.length > 0) {
       const orderIds = orders.map(o => o.id);
       const { data: allItems } = await supabase
@@ -75,7 +75,25 @@ router.get('/', authenticateUser, async (req, res) => {
         if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
         itemsByOrder[item.order_id].push(item);
       }
-      orders = orders.map(o => ({ ...o, order_items: itemsByOrder[o.id] || [] }));
+
+      // Fetch customer info for each order
+      const userIds = [...new Set(orders.map(o => o.user_id).filter(Boolean))];
+      let usersMap = {};
+      if (userIds.length > 0) {
+        const { data: users } = await supabase
+          .from('user_info')
+          .select('id, name, mobile')
+          .in('id', userIds);
+        for (const u of (users || [])) {
+          usersMap[u.id] = u;
+        }
+      }
+
+      orders = orders.map(o => ({
+        ...o,
+        order_items: itemsByOrder[o.id] || [],
+        user: usersMap[o.user_id] || null,
+      }));
     }
 
     res.json({ orders });
