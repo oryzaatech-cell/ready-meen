@@ -11,6 +11,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS — allow frontend origins from environment variables or localhost defaults
+
+//CORS - ADDED
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.VENDOR_URL,
