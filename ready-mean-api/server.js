@@ -23,6 +23,7 @@ const allowedOrigins = [
   'https://ready-mean-customer.vercel.app',
   'https://ready-mean-vendor.vercel.app',
   'https://ready-mean-admin.vercel.app',
+  "https://ready-meen-admin.vercel.app",
 ].filter(Boolean);
 
 app.use(cors({
