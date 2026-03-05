@@ -17,12 +17,12 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.VENDOR_URL,
   process.env.ADMIN_URL,
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'https://ready-meen-customer.vercel.app',
-  'https://ready-meen-vendor.vercel.app',
-  'https://ready-meen-admin.vercel.app',
+  ///'http://localhost:3000',
+  //'http://localhost:3001',
+ // 'http://localhost:3002',
+  'https://ready-mean-customer.vercel.app',
+  'https://ready-mean-vendor.vercel.app',
+  'https://ready-mean-admin.vercel.app',
 ].filter(Boolean);
 
 app.use(cors({
