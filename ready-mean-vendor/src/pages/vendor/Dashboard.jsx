@@ -142,7 +142,7 @@ export default function VendorDashboard() {
               <Share2 size={18} />
             </button>
           </div>
-          {copied && <p className="text-xs text-emerald-600 font-medium text-center mt-2 animate-fade-in">Invite link copied!</p>}
+          {copied && <p className="text-xs text-emerald-600 font-medium text-center mt-2 animate-fade-in">Invite code copied!</p>}
         </Card>
       )}
 
