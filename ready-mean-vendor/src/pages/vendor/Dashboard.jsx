@@ -45,14 +45,14 @@ export default function VendorDashboard() {
     }
   }
 
-  async function handleCopyCode() {
+  async function copyToClipboard(textToCopy) {
     try {
-      await navigator.clipboard.writeText(inviteLink);
+      await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       const input = document.createElement('input');
-      input.value = inviteLink;
+      input.value = textToCopy;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
@@ -60,6 +60,10 @@ export default function VendorDashboard() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  }
+
+  async function handleCopyCode() {
+    await copyToClipboard(vendorCode);
   }
 
   async function handleShare() {
@@ -74,7 +78,7 @@ export default function VendorDashboard() {
         // User cancelled share
       }
     } else {
-      handleCopyCode();
+      await copyToClipboard(inviteLink);
     }
   }
 
