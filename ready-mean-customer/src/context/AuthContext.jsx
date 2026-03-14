@@ -110,6 +110,28 @@ export function AuthProvider({ children }) {
     const syntheticEmail = `${mobile.trim()}@readymean.app`;
     const { data, error } = await supabase.auth.signInWithPassword({ email: syntheticEmail, password });
     if (error) throw error;
+    
+    // Check if user is actually a customer
+    if (data?.session) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/me`, {
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        });
+        
+        if (res.ok) {
+          const profileData = await res.json();
+          // The backend returns { user: { role: '...' } }
+          if (profileData.user?.role === 'vendor') {
+            await supabase.auth.signOut();
+            throw new Error('This account is registered as a Vendor. Please use the Vendor app.');
+          }
+        }
+      } catch (err) {
+        if (err.message.includes('Vendor')) throw err;
+        console.error('Role validation check failed:', err);
+      }
+    }
+    
     return data;
   };
 
