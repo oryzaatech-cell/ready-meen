@@ -25,7 +25,8 @@ export default function VendorDashboard() {
   const { user } = useAuth();
 
   const vendorCode = user?.vendor_code;
-  const inviteLink = vendorCode ? `${window.location.origin.replace(/:\d+/, ':3000')}/join/${vendorCode}` : '';
+  const customerAppUrl = import.meta.env.VITE_CUSTOMER_APP_URL || (window.location.port ? window.location.origin.replace(/:\d+/, ':3000') : 'http://localhost:3000');
+  const inviteLink = vendorCode ? `${customerAppUrl}/join/${vendorCode}` : '';
 
   useEffect(() => { loadData(); }, []);
 
