@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Fish, ShoppingBag, Truck, Shield, ChevronRight, Scissors, ArrowDown, Heart, Users } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Button from '../../components/ui/Button';
@@ -239,9 +239,11 @@ function Bubbles() {
 
 export default function Landing() {
   const { isAuthenticated, user } = useAuth();
+  const { code: vendorCode } = useParams();
   const homeLink = isAuthenticated
     ? user?.role === 'vendor' ? '/vendor' : user?.role === 'admin' ? '/admin' : '/home'
     : '/login';
+  const registerLink = vendorCode ? `/register/${vendorCode}` : '/register';
 
   return (
     <div className="min-h-[100dvh] bg-white overflow-x-hidden">
@@ -311,7 +313,7 @@ export default function Landing() {
                   Start Shopping <ChevronRight size={16} className="ml-1" />
                 </Button>
               </Link>
-              <Link to="/register" className="w-full sm:w-auto">
+              <Link to={registerLink} className="w-full sm:w-auto">
                 <Button variant="ghost" size="lg" className="w-full sm:w-auto min-h-[48px] md:min-h-[52px] px-6 md:px-8 rounded-full text-sm md:text-base font-semibold border border-gray-200 hover:border-primary-200 hover:bg-primary-50/50 transition-all duration-300">
                   Create Account
                 </Button>
