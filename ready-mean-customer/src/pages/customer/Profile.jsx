@@ -18,7 +18,6 @@ export default function CustomerProfile() {
   const [name, setName] = useState(user?.name || '');
   const [saving, setSaving] = useState(false);
 
-  // Address state
   const [addresses, setAddresses] = useState([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -90,18 +89,19 @@ export default function CustomerProfile() {
   return (
     <PageLayout>
       <div className="max-w-sm mx-auto space-y-4">
-        <h1 className="text-xl font-bold">Profile</h1>
+        <h1 className="text-xl font-bold text-gray-900">Profile</h1>
 
-        <Card className="p-4 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center">
-              <User size={24} className="text-primary-600" />
+        {/* User card */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-50 rounded-full flex items-center justify-center shadow-inner">
+              <User size={28} className="text-primary-600" />
             </div>
             <div>
-              <p className="font-semibold">{user?.name}</p>
+              <p className="font-bold text-gray-900 text-lg">{user?.name}</p>
               {user?.mobile && (
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <Phone size={12} />
+                <div className="flex items-center gap-1.5 text-sm text-gray-400 mt-0.5">
+                  <Phone size={13} />
                   <span>{user.mobile}</span>
                 </div>
               )}
@@ -114,25 +114,25 @@ export default function CustomerProfile() {
             onChange={(e) => setName(e.target.value)}
           />
 
-          <Button onClick={handleSave} loading={saving} className="w-full">
+          <Button onClick={handleSave} loading={saving} className="w-full rounded-xl min-h-[48px]">
             Save Changes
           </Button>
-        </Card>
+        </div>
 
-        {/* Saved Addresses */}
-        <Card className="p-4 space-y-3">
+        {/* Addresses */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MapPin size={18} className="text-primary-600" />
-              <h2 className="font-semibold">Saved Addresses</h2>
+              <h2 className="font-bold text-gray-900">Saved Addresses</h2>
             </div>
-            <span className="text-xs text-gray-500">{addresses.length} / {MAX_ADDRESSES}</span>
+            <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">{addresses.length}/{MAX_ADDRESSES}</span>
           </div>
 
           {loadingAddresses ? (
-            <p className="text-sm text-gray-400 text-center py-3">Loading...</p>
+            <p className="text-sm text-gray-400 text-center py-4">Loading...</p>
           ) : addresses.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-3">No saved addresses</p>
+            <p className="text-sm text-gray-400 text-center py-4">No saved addresses</p>
           ) : (
             <div className="space-y-2">
               {addresses.map((addr) => (
@@ -151,46 +151,28 @@ export default function CustomerProfile() {
               variant="secondary"
               size="sm"
               onClick={() => setShowAddressModal(true)}
-              className="w-full"
+              className="w-full rounded-xl min-h-[44px]"
             >
               <Plus size={16} className="mr-1" />
               Add Address
             </Button>
           )}
-        </Card>
+        </div>
 
-        <Button variant="danger" onClick={signOut} className="w-full">
+        {/* Sign out */}
+        <Button variant="danger" onClick={signOut} className="w-full rounded-xl min-h-[48px]">
           <LogOut size={16} className="mr-2" />
           Sign Out
         </Button>
       </div>
 
-      {/* Add Address Modal */}
-      <Modal
-        isOpen={showAddressModal}
-        onClose={() => setShowAddressModal(false)}
-        title="Add Address"
-      >
-        <AddressForm
-          onSubmit={handleAddAddress}
-          onCancel={() => setShowAddressModal(false)}
-          loading={addressSaving}
-        />
+      <Modal isOpen={showAddressModal} onClose={() => setShowAddressModal(false)} title="Add Address">
+        <AddressForm onSubmit={handleAddAddress} onCancel={() => setShowAddressModal(false)} loading={addressSaving} />
       </Modal>
 
-      {/* Edit Address Modal */}
-      <Modal
-        isOpen={!!editingAddress}
-        onClose={() => setEditingAddress(null)}
-        title="Edit Address"
-      >
+      <Modal isOpen={!!editingAddress} onClose={() => setEditingAddress(null)} title="Edit Address">
         {editingAddress && (
-          <AddressForm
-            initial={editingAddress}
-            onSubmit={handleEditAddress}
-            onCancel={() => setEditingAddress(null)}
-            loading={addressSaving}
-          />
+          <AddressForm initial={editingAddress} onSubmit={handleEditAddress} onCancel={() => setEditingAddress(null)} loading={addressSaving} />
         )}
       </Modal>
     </PageLayout>

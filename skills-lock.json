@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "mobile-ux-optimizer": {
+      "source": "erichowens/some_claude_skills",
+      "sourceType": "github",
+      "computedHash": "06e7301426d1360ec4986b03537500ca7b787b635c30ad623d59fc583e1c24a6"
+    },
+    "pwa-expert": {
+      "source": "erichowens/some_claude_skills",
+      "sourceType": "github",
+      "computedHash": "cbd7e8e72e82504420ece0cb1dd8994cd5909f60d21c9082afccbddf7c528b8b"
+    }
+  }
+}

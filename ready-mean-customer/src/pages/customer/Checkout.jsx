@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, ShieldCheck } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
 import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import AddressCard from '../../components/AddressCard';
 import AddressForm from '../../components/AddressForm';
@@ -19,7 +18,6 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Address state
   const [addresses, setAddresses] = useState([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -38,7 +36,6 @@ export default function Checkout() {
     try {
       const { addresses: data } = await get('/addresses');
       setAddresses(data || []);
-      // Auto-select the first address
       if (data && data.length > 0) {
         setSelectedAddress(data[0]);
       }
@@ -49,9 +46,7 @@ export default function Checkout() {
     }
   }
 
-  if (items.length === 0) {
-    return null;
-  }
+  if (items.length === 0) return null;
 
   const handleAddNewAddress = async (data) => {
     setAddingSaving(true);
@@ -101,14 +96,14 @@ export default function Checkout() {
   return (
     <PageLayout>
       <div className="max-w-lg mx-auto space-y-4">
-        <h1 className="text-xl font-bold">Checkout</h1>
+        <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
 
-        {/* Address Selection */}
-        <Card className="p-4 space-y-3">
-          <h3 className="font-medium text-sm">Delivery Address</h3>
+        {/* Address */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-3">
+          <h3 className="font-semibold text-sm text-gray-900">Delivery Address</h3>
 
           {loadingAddresses ? (
-            <p className="text-sm text-gray-400 text-center py-2">Loading addresses...</p>
+            <p className="text-sm text-gray-400 text-center py-3">Loading addresses...</p>
           ) : (
             <>
               {addresses.length > 0 ? (
@@ -124,71 +119,59 @@ export default function Checkout() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 text-center py-2">No saved addresses — add one to continue</p>
+                <p className="text-sm text-gray-400 text-center py-3">No saved addresses — add one to continue</p>
               )}
 
               {addresses.length < 3 && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowAddModal(true)}
-                  className="w-full"
-                >
+                <Button variant="secondary" size="sm" onClick={() => setShowAddModal(true)} className="w-full rounded-xl min-h-[44px]">
                   <Plus size={15} className="mr-1" />
                   Add New Address
                 </Button>
               )}
             </>
           )}
-        </Card>
+        </div>
 
         {/* Summary */}
-        <Card className="p-4">
-          <h3 className="font-medium text-sm mb-3">Order Summary</h3>
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+          <h3 className="font-semibold text-sm text-gray-900 mb-3">Order Summary</h3>
           {items.map((item) => (
-            <div key={item.cart_key} className="flex justify-between text-sm py-1">
+            <div key={item.cart_key} className="flex justify-between text-sm py-1.5">
               <div>
-                <span className="text-gray-600">{item.name} x{item.qty} kg</span>
+                <span className="text-gray-700">{item.name}</span>
+                <span className="text-gray-400 ml-1">x{item.qty}kg</span>
                 <div className="flex gap-1 mt-0.5">
                   {item.cutting_type && item.cutting_type !== 'whole' && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-100">
                       {item.cutting_type}
                     </span>
                   )}
                   {item.cleaning && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-100">
                       Cleaned
                     </span>
                   )}
                 </div>
               </div>
-              <span>{formatCurrency(item.price * item.qty)}</span>
+              <span className="font-medium text-gray-700">{formatCurrency(item.price * item.qty)}</span>
             </div>
           ))}
-          <div className="flex justify-between font-bold text-base mt-3 pt-3 border-t">
+          <div className="flex justify-between font-bold text-base mt-3 pt-3 border-t border-gray-100">
             <span>Total</span>
             <span className="text-primary-700">{formatCurrency(totalAmount)}</span>
           </div>
-        </Card>
+        </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 px-1">{error}</p>}
 
-        <Button onClick={handlePlaceOrder} loading={loading} className="w-full" size="lg">
+        <Button onClick={handlePlaceOrder} loading={loading} className="w-full min-h-[52px] rounded-xl shadow-md shadow-primary-600/15" size="lg">
+          <ShieldCheck size={18} className="mr-2" />
           Place Order
         </Button>
       </div>
 
-      {/* Add New Address Modal */}
-      <Modal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="Add New Address"
-      >
-        <AddressForm
-          onSubmit={handleAddNewAddress}
-          onCancel={() => setShowAddModal(false)}
-          loading={addingSaving}
-        />
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Address">
+        <AddressForm onSubmit={handleAddNewAddress} onCancel={() => setShowAddModal(false)} loading={addingSaving} />
       </Modal>
     </PageLayout>
   );

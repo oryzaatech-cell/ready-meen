@@ -7,6 +7,7 @@ import Spinner from './components/ui/Spinner';
 const Landing = lazy(() => import('./pages/public/Landing'));
 const Login = lazy(() => import('./pages/public/Login'));
 const Register = lazy(() => import('./pages/public/Register'));
+const ForgotPassword = lazy(() => import('./pages/public/ForgotPassword'));
 const Home = lazy(() => import('./pages/customer/Home'));
 const ProductDetail = lazy(() => import('./pages/customer/ProductDetail'));
 const Cart = lazy(() => import('./pages/customer/Cart'));
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/join/:code" element={<Register />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/product/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />

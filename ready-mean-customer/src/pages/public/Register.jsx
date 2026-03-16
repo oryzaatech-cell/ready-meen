@@ -57,14 +57,13 @@ export default function Register() {
     if (!name.trim()) { setError('Name is required'); return; }
     if (!mobile.trim() || mobile.trim().length < 10) { setError('Please enter a valid mobile number'); return; }
     if (!password || password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    if (vendorCode.trim() && vendorCodeStatus !== 'valid') { setError('Please enter a valid vendor code'); return; }
+    if (!vendorCode.trim()) { setError('Vendor code is required'); return; }
+    if (vendorCodeStatus !== 'valid') { setError('Please enter a valid vendor code'); return; }
 
     setLoading(true);
     try {
       const metadata = { name: name.trim() };
-      if (vendorCode.trim() && vendorCodeStatus === 'valid') {
-        metadata.vendor_code = vendorCode.trim().toUpperCase();
-      }
+      metadata.vendor_code = vendorCode.trim().toUpperCase();
       await signUp(mobile.trim(), password, metadata);
       navigate('/home', { replace: true });
     } catch (err) {
@@ -91,7 +90,7 @@ export default function Register() {
 
             <div>
               <Input
-                label="Vendor Code (optional)"
+                label="Vendor Code"
                 placeholder="e.g. FH3K9X"
                 value={vendorCode}
                 onChange={(e) => setVendorCode(e.target.value.toUpperCase())}

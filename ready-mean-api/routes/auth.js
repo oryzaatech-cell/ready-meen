@@ -53,10 +53,15 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: 'Invalid role' });
     }
 
+    // Vendor code is required for customers
+    if (selectedRole === 'customer' && !vendor_code?.trim()) {
+      return res.status(400).json({ error: 'Vendor code is required' });
+    }
+
     // Generate synthetic email from mobile for Supabase auth
     const syntheticEmail = `${mobile.trim()}@readymean.app`;
 
-    // If customer provides a vendor_code, look up the vendor
+    // Look up the vendor for the provided code
     let linkedVendorId = null;
     if (selectedRole === 'customer' && vendor_code) {
       const code = vendor_code.trim().toUpperCase();
@@ -283,6 +288,104 @@ router.post('/profile', authenticateUser, async (req, res) => {
     res.json({ profile: { ...profile, role: selectedRole } });
   } catch (err) {
     console.error('Profile route error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/auth/verify-identity — Verify user identity for password reset
+router.post('/verify-identity', async (req, res) => {
+  try {
+    const { mobile, name } = req.body;
+
+    if (!mobile || mobile.trim().length < 10) {
+      return res.status(400).json({ error: 'Valid mobile number is required' });
+    }
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    // Check customer table
+    const { data: customer, error: custErr } = await supabase
+      .from('user_info')
+      .select('id, name')
+      .eq('mobile', mobile.trim())
+      .maybeSingle();
+
+    if (custErr) {
+      console.error('Verify identity customer error:', custErr);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    // Check vendor table
+    const { data: vendor, error: vendErr } = await supabase
+      .from('vendor_info')
+      .select('id, name')
+      .eq('phone', mobile.trim())
+      .maybeSingle();
+
+    if (vendErr) {
+      console.error('Verify identity vendor error:', vendErr);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
+    const user = customer || vendor;
+    if (!user || user.name.toLowerCase() !== name.trim().toLowerCase()) {
+      return res.status(400).json({ error: 'Mobile number and name do not match our records' });
+    }
+
+    res.json({ verified: true });
+  } catch (err) {
+    console.error('Verify identity error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/auth/reset-password — Reset password after identity verification
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { mobile, name, password } = req.body;
+
+    if (!mobile || mobile.trim().length < 10) {
+      return res.status(400).json({ error: 'Valid mobile number is required' });
+    }
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Re-verify identity — check both tables
+    const { data: customer } = await supabase
+      .from('user_info')
+      .select('id, name, auth_id')
+      .eq('mobile', mobile.trim())
+      .maybeSingle();
+
+    const { data: vendor } = await supabase
+      .from('vendor_info')
+      .select('id, name, auth_id')
+      .eq('phone', mobile.trim())
+      .maybeSingle();
+
+    const user = customer || vendor;
+    if (!user || user.name.toLowerCase() !== name.trim().toLowerCase()) {
+      return res.status(400).json({ error: 'Verification failed' });
+    }
+
+    // Update password via Supabase admin API
+    const { error: updateError } = await supabase.auth.admin.updateUserById(user.auth_id, {
+      password,
+    });
+
+    if (updateError) {
+      console.error('Password update error:', updateError);
+      return res.status(500).json({ error: 'Failed to reset password' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Reset password error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, ChevronRight } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
-import Card from '../../components/ui/Card';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
 import Spinner from '../../components/ui/Spinner';
 import formatCurrency from '../../shared/formatCurrency';
@@ -22,40 +21,45 @@ export default function CustomerOrders() {
   }, []);
 
   if (loading) {
-    return <PageLayout><div className="flex justify-center py-12"><Spinner /></div></PageLayout>;
+    return <PageLayout><div className="flex justify-center py-16"><Spinner /></div></PageLayout>;
   }
 
   return (
     <PageLayout>
-      <div className="max-w-lg mx-auto space-y-4">
-        <h1 className="text-xl font-bold">My Orders</h1>
+      <div className="max-w-lg mx-auto space-y-3">
+        <h1 className="text-xl font-bold text-gray-900 mb-1">My Orders</h1>
 
         {orders.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <ClipboardList size={32} className="mx-auto mb-2 text-gray-300" />
-            <p>No orders yet</p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ClipboardList size={28} className="text-gray-300" />
+            </div>
+            <h3 className="text-base font-semibold text-gray-700">No orders yet</h3>
+            <p className="text-sm text-gray-400 mt-1">Your orders will appear here</p>
           </div>
         ) : (
           orders.map((order) => (
-            <Card key={order.id} className="p-4" onClick={() => navigate(`/orders/${order.id}`)}>
+            <div
+              key={order.id}
+              onClick={() => navigate(`/orders/${order.id}`)}
+              className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200"
+            >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium">Order #{order.id}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {order.order_items?.length || 0} item(s)
+                  <p className="text-sm font-semibold text-gray-900">Order #{order.id}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {order.order_items?.length || 0} item(s) &middot; {new Date(order.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 <OrderStatusBadge status={order.status} />
               </div>
-              <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                <span className="text-sm font-semibold text-primary-700">
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+                <span className="text-base font-bold text-primary-700">
                   {formatCurrency(order.total_amt)}
                 </span>
-                <span className="text-xs text-gray-400">
-                  {new Date(order.created_at).toLocaleDateString()}
-                </span>
+                <ChevronRight size={16} className="text-gray-300" />
               </div>
-            </Card>
+            </div>
           ))
         )}
       </div>

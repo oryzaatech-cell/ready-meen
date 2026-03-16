@@ -70,6 +70,12 @@ export default function Login() {
             <Button type="submit" loading={loading} className="w-full">
               Sign In
             </Button>
+
+            <p className="text-sm text-right">
+              <Link to="/forgot-password" className="text-primary-600 font-medium hover:underline">
+                Forgot Password?
+              </Link>
+            </p>
           </form>
 
           <p className="text-sm text-center text-gray-600">
