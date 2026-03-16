@@ -78,6 +78,38 @@ function Counter({ end, label, icon: Icon }) {
   );
 }
 
+// Realistic rising bubbles for hero
+function HeroBubbles() {
+  const bubbles = Array.from({ length: 12 }, (_, i) => ({
+    left: `${5 + Math.random() * 90}%`,
+    size: 3 + Math.random() * 8,
+    duration: 8 + Math.random() * 12,
+    delay: Math.random() * 10,
+    wobble: -10 + Math.random() * 20,
+  }));
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {bubbles.map((b, i) => (
+        <div
+          key={i}
+          className="absolute bottom-0 rounded-full animate-hero-bubble"
+          style={{
+            left: b.left,
+            width: b.size,
+            height: b.size,
+            background: `radial-gradient(circle at 30% 30%, rgba(2,132,199,0.18), rgba(2,132,199,0.04) 60%, transparent 80%)`,
+            border: '0.5px solid rgba(2,132,199,0.1)',
+            '--duration': `${b.duration}s`,
+            '--delay': `${b.delay}s`,
+            '--wobble': `${b.wobble}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 // Water droplets for hero (very subtle, light colored)
 function WaterDroplets() {
   const drops = Array.from({ length: 8 }, (_, i) => ({
@@ -250,14 +282,15 @@ export default function Landing() {
         <section className="relative px-4 pt-2 pb-10 md:pt-12 md:pb-28 overflow-hidden">
           <div className="absolute top-0 right-0 w-60 md:w-96 h-60 md:h-96 bg-primary-200/30 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" />
           <div className="absolute bottom-0 left-0 w-48 md:w-80 h-48 md:h-80 bg-blue-200/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
-          <WaterDroplets />
-
-          {/* Floating decorations — hidden on small mobile */}
-          <div className="hidden sm:block absolute top-20 left-[8%] animate-float opacity-10">
-            <Fish size={48} className="text-primary-600" />
+          {/* Swimming fish decorations */}
+          <div className="absolute top-16 animate-swim-hero opacity-[0.08]" style={{ '--duration': '14s', '--delay': '0s' }}>
+            <Fish size={44} className="text-primary-600" />
           </div>
-          <div className="hidden sm:block absolute top-40 right-[10%] animate-float delay-300 opacity-10">
-            <Fish size={36} className="text-primary-500 -scale-x-100" />
+          <div className="absolute top-40 animate-swim-hero opacity-[0.06]" style={{ '--duration': '18s', '--delay': '4s' }}>
+            <Fish size={32} className="text-primary-500" />
+          </div>
+          <div className="absolute bottom-24 animate-swim-hero opacity-[0.05]" style={{ '--duration': '22s', '--delay': '8s' }}>
+            <Fish size={38} className="text-primary-600" />
           </div>
 
           <div className="relative max-w-6xl mx-auto text-center">
@@ -378,12 +411,6 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Wave decoration bottom */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 60" fill="none" className="w-full text-white">
-            <path d="M0 0v60c240-40 480-60 720-40s480 40 720 10V0H0z" fill="currentColor" />
-          </svg>
-        </div>
       </section>
 
       {/* CTA */}

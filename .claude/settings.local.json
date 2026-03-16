@@ -9,7 +9,9 @@
       "Bash(wmic process:*)",
       "mcp__ide__getDiagnostics",
       "Bash(cd:*)",
-      "Bash(where magick:*)"
+      "Bash(where magick:*)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:ready-mean-customer.vercel.app)"
     ]
   }
 }
