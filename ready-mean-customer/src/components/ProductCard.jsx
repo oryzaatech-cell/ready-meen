@@ -7,41 +7,55 @@ export default function ProductCard({ product, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98]"
+      className="bg-white rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-primary-900/8 hover:-translate-y-1.5 transition-all duration-300 active:scale-[0.97] group border border-gray-100/60"
     >
-      <div className="relative aspect-[4/3] bg-gray-100 flex items-center justify-center overflow-hidden">
+      {/* Image */}
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
         {product.image_url ? (
-          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+            loading="lazy"
+          />
         ) : (
-          <Fish size={40} className="text-gray-200" />
+          <Fish size={36} className="text-gray-200" />
         )}
+
+        {/* Bottom gradient on hover */}
+        {product.image_url && !soldOut && (
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        )}
+
         {soldOut && (
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
-            <span className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+            <span className="bg-gray-900 text-white text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               Sold Out
             </span>
           </div>
         )}
+
         {!soldOut && product.stock_qty <= 5 && (
-          <span className="absolute top-2 left-2 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+          <span className="absolute top-2 left-2 bg-amber-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full shadow-sm">
             Only {product.stock_qty}kg left
           </span>
         )}
+
+        {/* Price floating badge */}
+        {!soldOut && (
+          <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-0.5 shadow-sm border border-white/50">
+            <span className="text-[13px] font-bold text-primary-700">{formatCurrency(product.price)}</span>
+            <span className="text-[8px] text-gray-400 ml-0.5">/kg</span>
+          </div>
+        )}
       </div>
-      <div className="p-3">
-        <h3 className={`font-semibold text-sm truncate ${soldOut ? 'text-gray-400' : 'text-gray-900'}`}>{product.name}</h3>
+
+      {/* Info */}
+      <div className="p-3 pb-3.5">
+        <h3 className={`font-bold text-[13px] leading-snug truncate ${soldOut ? 'text-gray-400' : 'text-gray-900'}`}>
+          {product.name}
+        </h3>
         <p className="text-[11px] text-gray-400 mt-0.5 truncate">{product.vendor?.name || product.category}</p>
-        <div className="flex items-end justify-between mt-2">
-          <span className={`text-base font-bold ${soldOut ? 'text-gray-300' : 'text-primary-700'}`}>
-            {formatCurrency(product.price)}
-            <span className="text-[10px] text-gray-400 font-normal">/kg</span>
-          </span>
-          {soldOut ? (
-            <span className="text-[10px] font-semibold text-red-400">Sold Out</span>
-          ) : (
-            <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full">{product.stock_qty} kg</span>
-          )}
-        </div>
       </div>
     </div>
   );

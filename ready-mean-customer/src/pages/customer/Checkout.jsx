@@ -64,12 +64,14 @@ export default function Checkout() {
 
   const handlePlaceOrder = async () => {
     setError('');
-    setLoading(true);
 
-    let shippingAddress = null;
-    if (selectedAddress) {
-      shippingAddress = formatAddressText(selectedAddress);
+    if (!selectedAddress) {
+      setError('Please select or add a delivery address');
+      return;
     }
+
+    setLoading(true);
+    const shippingAddress = formatAddressText(selectedAddress);
 
     try {
       const orderItems = items.map((i) => ({

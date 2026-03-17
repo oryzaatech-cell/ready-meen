@@ -21,7 +21,11 @@ export default function AddressForm({ initial, onSubmit, onCancel, loading }) {
     if (!form.flat_name.trim()) errs.flat_name = 'Building name is required';
     if (!form.area.trim()) errs.area = 'Area is required';
     if (!form.name.trim()) errs.name = 'Name is required';
-    if (!form.phone.trim()) errs.phone = 'Phone is required';
+    if (!form.phone.trim()) {
+      errs.phone = 'Phone is required';
+    } else if (!/^[6-9]\d{9}$/.test(form.phone.trim())) {
+      errs.phone = 'Enter a valid 10-digit mobile number';
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };

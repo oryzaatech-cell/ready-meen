@@ -6,10 +6,10 @@ export default function Navbar() {
   const { signOut, isAuthenticated } = useAuth();
 
   return (
-    <nav className="bg-white/80 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-40">
+    <nav className="bg-white/90 backdrop-blur-xl border-b border-gray-100/50 sticky top-0 z-40 shadow-[0_1px_8px_rgba(0,0,0,0.03)]">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
-          <Link to="/home" className="flex items-center">
+          <Link to="/home" className="flex items-center -ml-3">
             <img src="/logo-transparent.png" alt="Ready Meen" className="h-14 w-14 object-contain drop-shadow -mr-2" />
             <div className="flex flex-col items-center">
               <span className="text-sm font-extrabold bg-gradient-to-r from-[#083850] via-[#286890] to-[#289098] bg-clip-text text-transparent leading-tight">Ready മീൻ</span>

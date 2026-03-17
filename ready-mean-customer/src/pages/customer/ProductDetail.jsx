@@ -93,33 +93,37 @@ export default function ProductDetail() {
         </button>
 
         {/* Image */}
-        <div className="relative aspect-[4/3] bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm">
+        <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center overflow-hidden shadow-sm animate-fade-up">
           {product.image_url ? (
             <ImageZoom src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
           ) : (
             <Fish size={64} className="text-gray-200" />
           )}
           {soldOut && (
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
-              <span className="bg-red-500 text-white text-sm font-bold px-5 py-2 rounded-full uppercase tracking-wide">
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+              <span className="bg-gray-900 text-white text-sm font-bold px-5 py-2 rounded-full uppercase tracking-wide">
                 Sold Out
               </span>
+            </div>
+          )}
+          {!soldOut && (
+            <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm text-xs text-emerald-600 font-bold px-3 py-1.5 rounded-full shadow-sm">
+              {product.stock_qty} kg in stock
             </div>
           )}
         </div>
 
         {/* Info */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {product.vendor?.name} &middot; {soldOut ? <span className="text-red-500 font-semibold">Sold Out</span> : <span className="text-emerald-600 font-medium">{product.stock_qty} kg available</span>}
-          </p>
+        <div className="animate-fade-up delay-100">
+          <h1 className="text-2xl font-display font-bold text-gray-900">{product.name}</h1>
+          <p className="text-sm text-gray-400 mt-1 font-medium">{product.vendor?.name}</p>
           {product.description && (
             <p className="text-sm text-gray-500 mt-2 leading-relaxed">{product.description}</p>
           )}
-          <p className="text-2xl font-bold text-primary-700 mt-3">
-            {formatCurrency(product.price)}<span className="text-sm text-gray-400 font-normal">/kg</span>
-          </p>
+          <div className="mt-3 flex items-baseline gap-1">
+            <span className="text-[1.7rem] font-bold text-gray-900 tracking-tight">{formatCurrency(product.price)}</span>
+            <span className="text-sm text-gray-400 font-medium">/kg</span>
+          </div>
         </div>
 
         {/* Cutting Type */}
@@ -134,10 +138,10 @@ export default function ProductDetail() {
                 <button
                   key={ct.type}
                   onClick={() => setCuttingType(ct.type)}
-                  className={`min-h-[44px] px-4 py-2.5 rounded-xl border text-sm transition-all duration-200 ${
+                  className={`min-h-[44px] px-4 py-2.5 rounded-xl border text-sm transition-all duration-300 ${
                     cuttingType === ct.type
-                      ? 'border-primary-500 bg-primary-50 text-primary-700 font-semibold shadow-sm shadow-primary-100'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300 active:bg-gray-50'
+                      ? 'border-primary-600 bg-primary-600 text-white font-semibold shadow-md shadow-primary-600/20'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-primary-200 hover:bg-primary-50/30 active:scale-[0.97]'
                   }`}
                 >
                   <span>{ct.label}</span>
@@ -154,7 +158,9 @@ export default function ProductDetail() {
 
         {/* Cleaning */}
         {product.cleaning_charge != null && (
-          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl border border-gray-200 hover:border-primary-200 transition-all duration-200 min-h-[56px] active:bg-gray-50">
+          <label className={`flex items-center gap-3 cursor-pointer p-4 rounded-xl border transition-all duration-300 min-h-[56px] active:scale-[0.99] ${
+            cleaning ? 'border-primary-500 bg-primary-50/60 shadow-sm shadow-primary-100' : 'border-gray-200 hover:border-primary-200'
+          }`}>
             <input
               type="checkbox"
               checked={cleaning}
@@ -222,12 +228,12 @@ export default function ProductDetail() {
             <p className="text-xs text-gray-400 mt-1">Check back later for fresh stock</p>
           </div>
         ) : (
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="sticky bottom-20 md:bottom-4 bg-white/95 backdrop-blur-lg rounded-2xl border border-gray-100 p-4 shadow-lg shadow-gray-200/50 flex items-center justify-between">
             <div>
-              <div className="text-xs text-gray-400">Total</div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Total</div>
               <div className="text-2xl font-bold text-primary-700">{formatCurrency(total)}</div>
             </div>
-            <Button onClick={handleAddToCart} size="lg" className={`min-h-[52px] rounded-xl shadow-md shadow-primary-600/15 transition-all duration-300 ${added ? 'bg-emerald-600 hover:bg-emerald-600' : ''}`}>
+            <Button onClick={handleAddToCart} size="lg" className={`min-h-[52px] rounded-xl shadow-md shadow-primary-600/15 transition-all duration-300 hover:-translate-y-0.5 ${added ? 'bg-emerald-600 hover:bg-emerald-600' : ''}`}>
               {added ? (
                 <span>Added!</span>
               ) : (

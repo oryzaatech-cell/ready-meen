@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Fish, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
@@ -86,13 +86,25 @@ export default function ForgotPassword() {
     }
   };
 
+  const logoBlock = (
+    <>
+      <Link to="/" className="flex items-center -ml-7 mb-2 w-fit">
+        <img src="/logo-transparent.png" alt="Ready Meen" className="h-24 w-24 object-contain drop-shadow -mr-6" />
+        <div className="flex flex-col items-center">
+          <span className="text-sm font-extrabold bg-gradient-to-r from-[#083850] via-[#286890] to-[#289098] bg-clip-text text-transparent leading-tight">Ready മീൻ</span>
+          <span className="text-[8px] font-semibold text-primary-700 tracking-[0.25em] uppercase italic">ready.to.cook</span>
+        </div>
+      </Link>
+    </>
+  );
+
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-sm text-center">
-          <Fish className="text-primary-600 mx-auto" size={40} />
-          <h1 className="text-2xl font-bold text-gray-900 mt-3">Password Reset</h1>
-          <p className="text-sm text-gray-500 mt-2">Your password has been reset successfully.</p>
+      <div className="min-h-[100dvh] bg-gradient-to-b from-primary-50 via-white to-white flex flex-col px-5 pt-12 pb-8">
+        <div className="w-full max-w-sm mx-auto">
+          {logoBlock}
+          <h1 className="text-3xl font-display font-bold text-gray-900 mt-2">Password<br />Reset</h1>
+          <p className="text-sm text-gray-400 mt-2">Your password has been reset successfully.</p>
           <Link to="/login">
             <Button className="w-full mt-6">Back to Sign In</Button>
           </Link>
@@ -102,12 +114,12 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Fish className="text-primary-600 mx-auto" size={40} />
-          <h1 className="text-2xl font-bold text-gray-900 mt-3">Reset Password</h1>
-          <p className="text-sm text-gray-500 mt-1">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-primary-50 via-white to-white flex flex-col px-5 pt-12 pb-8">
+      <div className="w-full max-w-sm mx-auto">
+        {logoBlock}
+        <div className="mb-6">
+          <h1 className="text-3xl font-display font-bold text-gray-900 leading-tight">Reset<br />Password</h1>
+          <p className="text-sm text-gray-400 mt-2">
             {step === 1 && 'Enter your registered mobile number'}
             {step === 2 && 'Verify your identity'}
             {step === 3 && 'Set your new password'}
