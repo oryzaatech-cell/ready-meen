@@ -124,6 +124,9 @@ export default function AddProduct() {
   // Recent products
   const [recentProducts, setRecentProducts] = useState(() => getRecentProducts());
 
+  // Options section collapse
+  const [optionsOpen, setOptionsOpen] = useState(true);
+
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
   const { post } = useApi();
@@ -332,31 +335,33 @@ export default function AddProduct() {
     <PageLayout>
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <Link to="/products" className="p-2 -ml-2 rounded-xl hover:bg-surface-100 active:bg-surface-200 transition-colors">
-            <ArrowLeft size={20} className="text-surface-600" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-surface-900">Add Product</h1>
-            <p className="text-xs text-surface-500 mt-0.5">Add a new fish product to your store</p>
+        <div className="mb-5 animate-slide-up">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-sm shadow-primary-500/20">
+              <PlusIcon size={18} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-surface-900">Add Product</h1>
+              <p className="text-[11px] text-surface-400">ഉൽപ്പന്നം ചേർക്കുക · Add fish with photo & price</p>
+            </div>
           </div>
         </div>
 
         {/* Quick Add Chips — Recent Products */}
         {recentProducts.length > 0 && (
-          <div className="mb-4">
-            <p className="text-xs font-medium text-surface-500 mb-2">Quick add from recent:</p>
+          <div className="mb-5 animate-slide-up">
+            <p className="text-[11px] font-semibold text-surface-400 mb-2 uppercase tracking-wider">Quick add · അടുത്തിടെ ചേർത്തവ</p>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
               {recentProducts.map((product, idx) => (
                 <button
                   key={`${product.name}-${idx}`}
                   type="button"
                   onClick={() => handleChipSelect(product)}
-                  className="flex-shrink-0 px-3.5 py-2 rounded-full bg-primary-50 border border-primary-200 text-primary-700 text-sm font-medium hover:bg-primary-100 active:bg-primary-200 transition-colors whitespace-nowrap"
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/80 ring-1 ring-surface-200/80 text-surface-700 text-sm font-medium hover:ring-primary-200 hover:bg-primary-50/50 hover:text-primary-700 active:bg-primary-100 transition-all whitespace-nowrap shadow-sm"
                 >
-                  {product.name}
+                  <span className="text-[13px]">{product.name}</span>
                   {product.price ? (
-                    <span className="ml-1.5 text-xs text-primary-500">{'\u20B9'}{product.price}</span>
+                    <span className="text-[11px] text-surface-400 font-normal">₹{product.price}</span>
                   ) : null}
                 </button>
               ))}
@@ -364,47 +369,92 @@ export default function AddProduct() {
           </div>
         )}
 
-        <Card className="p-5">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Fish Name with suggestions */}
-            <div className="relative">
-              <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
-                Fish Name
-                <span className="ml-2 text-[11px] font-normal text-surface-400">മീനിന്റെ പേര്</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. King Fish, Pomfret"
-                value={name}
-                onChange={(e) => { setName(e.target.value); setShowFishSuggestions(true); }}
-                onFocus={() => setShowFishSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowFishSuggestions(false), 200)}
-                className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
-              />
-              {showFishSuggestions && fishSuggestions.length > 0 && (
-                <div className="absolute z-20 left-0 right-0 mt-1 bg-white rounded-xl shadow-elevated border border-surface-100 overflow-hidden max-h-48 overflow-y-auto">
-                  {fishSuggestions.map((fish) => (
-                    <button
-                      key={fish.en}
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { setName(fish.en); setShowFishSuggestions(false); }}
-                      className="w-full px-3.5 py-2.5 text-left hover:bg-primary-50 active:bg-primary-100 transition-colors flex items-center justify-between"
-                    >
-                      <span className="text-sm font-medium text-surface-800">{fish.en}</span>
-                      <span className="text-xs text-surface-400">{fish.ml}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* ── Section 1: Fish Details ── */}
+          <Card className="p-5 animate-slide-up stagger-1">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="flex-shrink-0 w-5 h-5 rounded-md bg-primary-100 text-primary-700 text-[10px] font-bold flex items-center justify-center">1</span>
+              <h2 className="text-[13px] font-bold text-surface-800 uppercase tracking-wide">Fish Details <span className="font-normal text-surface-400 normal-case tracking-normal">· മീൻ വിവരങ്ങൾ</span></h2>
             </div>
 
-            {/* Image Upload */}
+            <div className="space-y-4">
+              {/* Fish Name with suggestions */}
+              <div className="relative">
+                <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
+                  Fish Name
+                  <span className="ml-2 text-[11px] font-normal text-surface-400">{'\u0D2E\u0D40\u0D28\u0D3F\u0D28\u0D4D\u0D31\u0D46 \u0D2A\u0D47\u0D30\u0D4D\u200D'}</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. King Fish, Pomfret"
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); setShowFishSuggestions(true); }}
+                  onFocus={() => setShowFishSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowFishSuggestions(false), 200)}
+                  className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
+                />
+                {showFishSuggestions && fishSuggestions.length > 0 && (
+                  <div className="absolute z-20 left-0 right-0 mt-1 bg-white rounded-xl shadow-elevated border border-surface-100 overflow-hidden max-h-48 overflow-y-auto">
+                    {fishSuggestions.map((fish) => (
+                      <button
+                        key={fish.en}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => { setName(fish.en); setShowFishSuggestions(false); }}
+                        className="w-full px-3.5 py-2.5 text-left hover:bg-primary-50 active:bg-primary-100 transition-colors flex items-center justify-between"
+                      >
+                        <span className="text-sm font-medium text-surface-800">{fish.en}</span>
+                        <span className="text-xs text-surface-400">{fish.ml}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Pricing — side by side */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
+                    Price per kg
+                    <span className="ml-1.5 text-[11px] font-normal text-surface-400">{'\u0D35\u0D3F\u0D32'}</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    placeholder={'\u20B9 450'}
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
+                    Stock (kg)
+                    <span className="ml-1.5 text-[11px] font-normal text-surface-400">{'\u0D38\u0D4D\u0D31\u0D4D\u0D31\u0D4B\u0D15\u0D4D\u0D15\u0D4D'}</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    placeholder="25"
+                    value={stockQty}
+                    onChange={(e) => setStockQty(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* ── Section 2: Product Photo ── */}
+          <Card className="p-5 animate-slide-up stagger-2">
+            <div className="flex items-center gap-2.5 mb-4">
+              <span className="flex-shrink-0 w-5 h-5 rounded-md bg-violet-100 text-violet-700 text-[10px] font-bold flex items-center justify-center">2</span>
+              <h2 className="text-[13px] font-bold text-surface-800 uppercase tracking-wide">Product Photo <span className="font-normal text-surface-400 normal-case tracking-normal">· ഫോട്ടോ</span></h2>
+            </div>
+
             <div>
-              <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
-                Product Image
-                <span className="ml-1.5 text-[11px] font-normal text-surface-400">ഫോട്ടോ</span>
-              </label>
               {croppedPreview ? (
                 <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-surface-900 group ring-1 ring-surface-200/60 shadow-card">
                   <img
@@ -449,19 +499,21 @@ export default function AddProduct() {
                 <button
                   type="button"
                   onClick={() => setShowImagePicker(true)}
-                  className="w-full aspect-[4/3] rounded-2xl flex flex-col items-center justify-center text-surface-400 bg-gradient-to-br from-surface-50 to-surface-100 border-2 border-dashed border-surface-200 hover:border-primary-300 hover:from-primary-50/50 hover:to-primary-50/30 hover:text-primary-600 active:from-primary-50 active:to-primary-50/50 transition-all duration-300 group"
+                  className="w-full h-36 rounded-2xl flex items-center gap-4 px-5 text-left bg-gradient-to-br from-surface-50 to-surface-100/80 border-2 border-dashed border-surface-200 hover:border-primary-300 hover:from-primary-50/40 hover:to-primary-50/20 active:from-primary-50/60 transition-all duration-300 group"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-white shadow-sm ring-1 ring-surface-100 flex items-center justify-center mb-3 group-hover:ring-primary-200 group-hover:shadow-md group-hover:shadow-primary-500/10 transition-all duration-300">
-                    <ImagePlus size={24} className="group-hover:scale-110 transition-transform" />
+                  <div className="w-14 h-14 rounded-2xl bg-white shadow-sm ring-1 ring-surface-100 flex items-center justify-center flex-shrink-0 group-hover:ring-primary-200 group-hover:shadow-md group-hover:shadow-primary-500/10 transition-all duration-300">
+                    <ImagePlus size={24} className="text-surface-400 group-hover:text-primary-600 group-hover:scale-110 transition-all" />
                   </div>
-                  <span className="text-sm font-semibold">Add Product Photo</span>
-                  <span className="text-[11px] text-surface-400 mt-0.5 group-hover:text-primary-500 transition-colors">ഫോട്ടോ ചേർക്കുക</span>
+                  <div>
+                    <span className="text-sm font-semibold text-surface-600 group-hover:text-primary-700 transition-colors block">Tap to add photo</span>
+                    <span className="text-[11px] text-surface-400 group-hover:text-primary-500 transition-colors">ഫോട്ടോ ചേർക്കുക · Camera or Gallery</span>
+                  </div>
                 </button>
               ) : (
                 <div className="w-full rounded-2xl bg-white border border-primary-200 shadow-card overflow-hidden">
                   <div className="bg-gradient-to-r from-primary-50 to-primary-100/50 px-4 py-3 border-b border-primary-100">
                     <p className="text-sm font-semibold text-surface-700">Choose photo source</p>
-                    <p className="text-[11px] text-surface-400 mt-0.5">ഫോട്ടോ ചേർക്കുക</p>
+                    <p className="text-[11px] text-surface-400 mt-0.5">{'\u0D2B\u0D4B\u0D1F\u0D4D\u0D1F\u0D4B \u0D1A\u0D47\u0D30\u0D4D\u200D\u0D15\u0D4D\u0D15\u0D41\u0D15'}</p>
                   </div>
                   <div className="p-4">
                     <div className="grid grid-cols-2 gap-3">
@@ -475,7 +527,7 @@ export default function AddProduct() {
                         </div>
                         <div className="text-center">
                           <span className="text-sm font-semibold block">Camera</span>
-                          <span className="text-[10px] text-surface-400">ക്യാമറ</span>
+                          <span className="text-[10px] text-surface-400">{'\u0D15\u0D4D\u0D2F\u0D3E\u0D2E\u0D31'}</span>
                         </div>
                       </button>
                       <button
@@ -488,7 +540,7 @@ export default function AddProduct() {
                         </div>
                         <div className="text-center">
                           <span className="text-sm font-semibold block">Gallery</span>
-                          <span className="text-[10px] text-surface-400">ഗാലറി</span>
+                          <span className="text-[10px] text-surface-400">{'\u0D17\u0D3E\u0D32\u0D31\u0D3F'}</span>
                         </div>
                       </button>
                     </div>
@@ -519,197 +571,186 @@ export default function AddProduct() {
                 className="hidden"
               />
             </div>
+          </Card>
 
-            {/* Pricing */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
-                  Price per kg
-                  <span className="ml-1.5 text-[11px] font-normal text-surface-400">{'\u0D35\u0D3F\u0D32'}</span>
-                </label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  placeholder={'\u20B9 450'}
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
-                />
-              </div>
-              <div>
-                <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
-                  Stock (kg)
-                  <span className="ml-1.5 text-[11px] font-normal text-surface-400">{'\u0D38\u0D4D\u0D31\u0D4D\u0D31\u0D4B\u0D15\u0D4D\u0D15\u0D4D'}</span>
-                </label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  placeholder="25"
-                  value={stockQty}
-                  onChange={(e) => setStockQty(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
-                />
-              </div>
-            </div>
+          {/* ── Section 3: Options (collapsible) ── */}
+          <Card className="overflow-hidden animate-slide-up stagger-3">
+            <button
+              type="button"
+              onClick={() => setOptionsOpen(prev => !prev)}
+              className="w-full flex items-center gap-2.5 p-5 text-left"
+            >
+              <span className="flex-shrink-0 w-5 h-5 rounded-md bg-amber-100 text-amber-700 text-[10px] font-bold flex items-center justify-center">3</span>
+              <h2 className="flex-1 text-[13px] font-bold text-surface-800 uppercase tracking-wide">Options <span className="font-normal text-surface-400 normal-case tracking-normal">· ഓപ്ഷനുകൾ</span></h2>
+              <ChevronDown
+                size={16}
+                className={`text-surface-400 transition-transform duration-300 ${optionsOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
 
-            {/* Cleaning Option */}
-            <div className="border border-surface-200 rounded-xl p-4 space-y-3">
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={cleaningEnabled}
-                  onChange={(e) => setCleaningEnabled(e.target.checked)}
-                  className="w-4.5 h-4.5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
-                />
-                <Sparkles size={16} className="text-blue-500" />
-                <span className="text-sm font-semibold text-surface-900">Cleaning available · <span className="text-surface-400 font-normal text-xs">വൃത്തിയാക്കൽ</span></span>
-              </label>
-              {cleaningEnabled && (
-                <Input
-                  label="Cleaning charge (INR/kg)"
-                  type="number"
-                  step="1"
-                  min="0"
-                  placeholder="e.g. 40"
-                  value={cleaningCharge}
-                  onChange={(e) => setCleaningCharge(e.target.value)}
-                />
-              )}
-            </div>
-
-            {/* Cutting Options */}
-            <div className="border border-surface-200 rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-2.5 mb-1">
-                <Scissors size={16} className="text-orange-500" />
-                <span className="text-sm font-semibold text-surface-900">Cutting options · <span className="text-surface-400 font-normal text-xs">മുറിക്കൽ</span></span>
-              </div>
-              <p className="text-xs text-surface-500">"Whole Fish" is always available at base price. Tap below to add cut types:</p>
-              {/* Quick cut type chips */}
-              <div className="flex flex-wrap gap-1.5">
-                {CUTTING_TYPES.map((ct) => {
-                  const alreadyAdded = cuttingOptions.some(c => c.name.toLowerCase() === ct.en.toLowerCase());
-                  return (
-                    <button
-                      key={ct.en}
-                      type="button"
-                      disabled={alreadyAdded}
-                      onClick={() => setCuttingOptions(prev => [...prev, { name: ct.en, charge: '' }])}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        alreadyAdded
-                          ? 'bg-primary-50 text-primary-400 ring-1 ring-primary-100 cursor-default opacity-60'
-                          : 'bg-surface-50 text-surface-600 ring-1 ring-surface-200 hover:bg-primary-50 hover:text-primary-700 hover:ring-primary-200 active:bg-primary-100'
-                      }`}
-                    >
-                      {ct.en} <span className="text-[10px] opacity-70">{ct.ml}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {cuttingOptions.map((cut, idx) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Cut name (e.g. Steaks)"
-                      value={cut.name}
-                      onChange={(e) =>
-                        setCuttingOptions(prev => prev.map((c, i) => i === idx ? { ...c, name: e.target.value } : c))
-                      }
+            {optionsOpen && (
+              <div className="px-5 pb-5 space-y-4 border-t border-surface-100 pt-4">
+                {/* Cleaning Option */}
+                <div className="border border-surface-200 rounded-xl p-4 space-y-3">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cleaningEnabled}
+                      onChange={(e) => setCleaningEnabled(e.target.checked)}
+                      className="w-4.5 h-4.5 rounded border-surface-300 text-primary-600 focus:ring-primary-500"
                     />
-                  </div>
-                  <div className="w-24">
+                    <Sparkles size={16} className="text-blue-500" />
+                    <span className="text-sm font-semibold text-surface-900">Cleaning available · <span className="text-surface-400 font-normal text-xs">{'\u0D35\u0D43\u0D24\u0D4D\u0D24\u0D3F\u0D2F\u0D3E\u0D15\u0D4D\u0D15\u0D7D'}</span></span>
+                  </label>
+                  {cleaningEnabled && (
                     <Input
+                      label="Cleaning charge (INR/kg)"
                       type="number"
                       step="1"
                       min="0"
-                      placeholder={'\u20B9/kg'}
-                      value={cut.charge}
-                      onChange={(e) =>
-                        setCuttingOptions(prev => prev.map((c, i) => i === idx ? { ...c, charge: e.target.value } : c))
-                      }
+                      placeholder="e.g. 40"
+                      value={cleaningCharge}
+                      onChange={(e) => setCleaningCharge(e.target.value)}
                     />
+                  )}
+                </div>
+
+                {/* Cutting Options */}
+                <div className="border border-surface-200 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <Scissors size={16} className="text-orange-500" />
+                    <span className="text-sm font-semibold text-surface-900">Cutting options · <span className="text-surface-400 font-normal text-xs">{'\u0D2E\u0D41\u0D31\u0D3F\u0D15\u0D4D\u0D15\u0D7D'}</span></span>
                   </div>
+                  <p className="text-xs text-surface-500">"Whole Fish" is always available at base price. Tap below to add cut types:</p>
+                  {/* Quick cut type chips */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {CUTTING_TYPES.map((ct) => {
+                      const alreadyAdded = cuttingOptions.some(c => c.name.toLowerCase() === ct.en.toLowerCase());
+                      return (
+                        <button
+                          key={ct.en}
+                          type="button"
+                          disabled={alreadyAdded}
+                          onClick={() => setCuttingOptions(prev => [...prev, { name: ct.en, charge: '' }])}
+                          className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            alreadyAdded
+                              ? 'bg-primary-50 text-primary-400 ring-1 ring-primary-100 cursor-default opacity-60'
+                              : 'bg-surface-50 text-surface-600 ring-1 ring-surface-200 hover:bg-primary-50 hover:text-primary-700 hover:ring-primary-200 active:bg-primary-100'
+                          }`}
+                        >
+                          {ct.en} <span className="text-[10px] opacity-70">{ct.ml}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {cuttingOptions.map((cut, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="flex-1">
+                        <Input
+                          placeholder="Cut name (e.g. Steaks)"
+                          value={cut.name}
+                          onChange={(e) =>
+                            setCuttingOptions(prev => prev.map((c, i) => i === idx ? { ...c, name: e.target.value } : c))
+                          }
+                        />
+                      </div>
+                      <div className="w-24">
+                        <Input
+                          type="number"
+                          step="1"
+                          min="0"
+                          placeholder={'\u20B9/kg'}
+                          value={cut.charge}
+                          onChange={(e) =>
+                            setCuttingOptions(prev => prev.map((c, i) => i === idx ? { ...c, charge: e.target.value } : c))
+                          }
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCuttingOptions(prev => prev.filter((_, i) => i !== idx))}
+                        className="mt-2 p-2 text-surface-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
                   <button
                     type="button"
-                    onClick={() => setCuttingOptions(prev => prev.filter((_, i) => i !== idx))}
-                    className="mt-2 p-2 text-surface-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    onClick={() => setCuttingOptions(prev => [...prev, { name: '', charge: '' }])}
+                    className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-semibold transition-colors"
                   >
-                    <X size={16} />
+                    <PlusIcon size={15} />
+                    Add cut type
                   </button>
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => setCuttingOptions(prev => [...prev, { name: '', charge: '' }])}
-                className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-semibold transition-colors"
-              >
-                <PlusIcon size={15} />
-                Add cut type
-              </button>
+
+                {/* Description (collapsed by default) */}
+                {!showDescription ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDescription(true)}
+                    className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                  >
+                    <ChevronDown size={15} />
+                    Add description
+                  </button>
+                ) : (
+                  <div>
+                    <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
+                      Description
+                      <span className="ml-1 text-[11px] font-normal text-surface-400">(optional)</span>
+                    </label>
+                    <textarea
+                      placeholder="Brief description..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={2}
+                      className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 text-red-600 text-sm px-3 py-2.5 rounded-xl border border-red-100">
+              {error}
             </div>
+          )}
 
-            {/* Description (collapsed by default) */}
-            {!showDescription ? (
-              <button
-                type="button"
-                onClick={() => setShowDescription(true)}
-                className="flex items-center gap-1.5 text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
-              >
-                <ChevronDown size={15} />
-                Add description
-              </button>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full inline-flex flex-col items-center justify-center font-semibold rounded-2xl transition-all duration-300
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500
+              disabled:opacity-50 disabled:cursor-not-allowed
+              min-h-[58px] select-none active:scale-[0.97]
+              bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 text-white
+              shadow-[0_4px_20px_rgba(6,198,178,0.25)] hover:shadow-[0_6px_30px_rgba(6,198,178,0.35)]
+              hover:from-primary-700 hover:via-primary-600 hover:to-primary-700
+              active:from-primary-700 active:to-primary-700
+              px-6 py-3.5 animate-slide-up stagger-4"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                {uploading ? 'Uploading image...' : 'Adding product...'}
+              </span>
             ) : (
-              <div>
-                <label className="block text-[13px] font-semibold text-surface-600 mb-1.5">
-                  Description
-                  <span className="ml-1 text-[11px] font-normal text-surface-400">(optional)</span>
-                </label>
-                <textarea
-                  placeholder="Brief description..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={2}
-                  className="w-full px-3.5 py-2.5 border border-surface-200 rounded-xl text-base bg-surface-50/50 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white transition-all duration-200"
-                />
-              </div>
+              <>
+                <span className="text-[15px]">Add Product</span>
+                <span className="text-[11px] font-normal opacity-80 mt-0.5">{'\u0D09\u0D7B\u0D2A\u0D4D\u0D2A\u0D28\u0D4D\u0D28\u0D02 \u0D1A\u0D47\u0D30\u0D4D\u200D\u0D15\u0D4D\u0D15\u0D41\u0D15'}</span>
+              </>
             )}
-
-            {error && (
-              <div className="bg-red-50 text-red-600 text-sm px-3 py-2.5 rounded-xl border border-red-100">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full inline-flex flex-col items-center justify-center font-semibold rounded-xl transition-all duration-200
-                focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500
-                disabled:opacity-50 disabled:cursor-not-allowed
-                min-h-[56px] select-none active:scale-[0.98]
-                bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-md shadow-primary-600/20
-                hover:shadow-lg hover:shadow-primary-600/30 hover:from-primary-700 hover:to-primary-600
-                active:from-primary-700 active:to-primary-700
-                px-6 py-3"
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  {uploading ? 'Uploading image...' : 'Adding product...'}
-                </span>
-              ) : (
-                <>
-                  <span className="text-[15px]">Add Product</span>
-                  <span className="text-[11px] font-normal opacity-80 mt-0.5">{'\u0D09\u0D7D\u0D2A\u0D4D\u0D2A\u0D28\u0D4D\u0D28\u0D02 \u0D1A\u0D47\u0D30\u0D4D\u200D\u0D15\u0D4D\u0D15\u0D41\u0D15'}</span>
-                </>
-              )}
-            </button>
-          </form>
-        </Card>
+          </button>
+        </form>
       </div>
 
       {/* Success Toast / Overlay */}
