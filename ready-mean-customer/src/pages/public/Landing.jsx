@@ -492,7 +492,7 @@ export default function Landing() {
               Join Ready മീൻ today and get the freshest fish delivered to your doorstep.
             </p>
             <div className="mt-7 md:mt-9 flex flex-col sm:flex-row items-center justify-center gap-3 px-2">
-              <Link to={isAuthenticated ? homeLink : '/register'} className="w-full sm:w-auto">
+              <Link to={isAuthenticated ? homeLink : registerLink} className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto min-h-[50px] md:min-h-[54px] px-7 md:px-9 rounded-full text-sm md:text-base font-semibold shadow-lg shadow-primary-600/25 hover:shadow-xl hover:shadow-primary-600/35 transition-all duration-300 hover:-translate-y-1"

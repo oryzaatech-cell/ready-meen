@@ -1,8 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Remove tap highlight on mobile */
+/* ═══════════════════════════════════════════════════════ */
+/*  READY MEEN VENDOR — Premium Ocean-Fresh Dashboard     */
+/* ═══════════════════════════════════════════════════════ */
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
@@ -16,25 +21,23 @@ body {
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(170deg, #f0f4f7 0%, #f5f8fa 40%, #eef3f6 100%);
 }
 
-/* Better text selection */
 ::selection {
-  background-color: #a7f3d0;
-  color: #064e3b;
+  background-color: #91feea;
+  color: #003332;
 }
 
-/* Remove 300ms tap delay on interactive elements */
 button, a, [role="button"], input, select, textarea {
   touch-action: manipulation;
 }
 
-/* Prevent iOS auto-zoom on input focus (requires >= 16px) */
 input, select, textarea {
   font-size: 16px;
 }
 
-/* Hide scrollbar utility */
+/* ─── Scrollbar ─── */
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -43,50 +46,229 @@ input, select, textarea {
   display: none;
 }
 
-/* Custom thin scrollbar for desktop */
 @media (hover: hover) {
   .thin-scrollbar::-webkit-scrollbar {
-    width: 4px;
+    width: 5px;
   }
   .thin-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   .thin-scrollbar::-webkit-scrollbar-thumb {
-    background: #d1d5db;
+    background: #cdd4db;
     border-radius: 9999px;
   }
   .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+    background: #9ba7b4;
   }
 }
 
-/* Safe area utilities */
-.pt-safe {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.pl-safe {
-  padding-left: env(safe-area-inset-left, 0px);
-}
-.pr-safe {
-  padding-right: env(safe-area-inset-right, 0px);
-}
+/* ─── Safe Area ─── */
+.pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+.pl-safe { padding-left: env(safe-area-inset-left, 0px); }
+.pr-safe { padding-right: env(safe-area-inset-right, 0px); }
+.pb-safe { padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
 
-/* Bottom nav spacing for PWA */
-.pb-safe {
-  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
-}
-
-/* Glass morphism utility */
+/* ─── Glass Morphism ─── */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
 }
 
-/* Gradient text utility */
+.glass-dark {
+  background: rgba(18, 24, 32, 0.88);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+}
+
+/* ─── Gradient Text ─── */
 .text-gradient {
-  background: linear-gradient(135deg, #059669, #10b981);
+  background: linear-gradient(135deg, #06c6b2, #1fe2cb);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.text-gradient-warm {
+  background: linear-gradient(135deg, #06c6b2, #02a192, #068076);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Noise Texture Overlay ─── */
+.noise-overlay {
+  position: relative;
+}
+.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* ─── Premium Card System ─── */
+.card-hover {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.07),
+    0 4px 12px rgba(0,0,0,0.04),
+    0 0 0 1px rgba(6, 198, 178, 0.05);
+}
+.card-hover:active {
+  transform: translateY(-1px);
+  transition-duration: 0.1s;
+}
+
+/* ─── Stat Card Shimmer ─── */
+.stat-shine {
+  position: relative;
+  overflow: hidden;
+}
+.stat-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  transition: left 0.7s ease;
+  pointer-events: none;
+}
+.stat-shine:hover::before {
+  left: 130%;
+}
+
+/* ─── Staggered Entrance Animations ─── */
+.stagger-1 { animation-delay: 0.06s; }
+.stagger-2 { animation-delay: 0.12s; }
+.stagger-3 { animation-delay: 0.18s; }
+.stagger-4 { animation-delay: 0.24s; }
+.stagger-5 { animation-delay: 0.3s; }
+.stagger-6 { animation-delay: 0.36s; }
+
+/* ─── Custom Focus Ring ─── */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #effefb, 0 0 0 4px #06c6b2;
+}
+
+/* ─── Vendor Code Mono ─── */
+.vendor-code {
+  letter-spacing: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Pulse Animation ─── */
+@keyframes notify-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.animate-notify {
+  animation: notify-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Live Status Dot ─── */
+@keyframes status-breathe {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+.status-dot-live {
+  position: relative;
+}
+.status-dot-live::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  opacity: 0.25;
+  animation: status-breathe 2s ease-in-out infinite;
+}
+
+/* ─── Floating Label Effect ─── */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-gentle-float {
+  animation: gentle-float 4s ease-in-out infinite;
+}
+
+/* ─── Bottom Nav Pill Indicator ─── */
+.nav-pill-active {
+  position: relative;
+}
+.nav-pill-active::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(90deg, #06c6b2, #1fe2cb);
+}
+
+/* ─── Ripple Press Effect ─── */
+@keyframes ripple-out {
+  0% { transform: scale(0); opacity: 0.3; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─── Gradient Border ─── */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(6,198,178,0.3), rgba(31,226,203,0.1), rgba(6,198,178,0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Empty State Wave ─── */
+@keyframes wave-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(2deg); }
+  75% { transform: translateY(2px) rotate(-1deg); }
+}
+.animate-wave-bob {
+  animation: wave-bob 5s ease-in-out infinite;
+}
+
+/* ─── Page Transition ─── */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px) scale(0.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.page-enter {
+  animation: page-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Scrollbar Hide Utility ─── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

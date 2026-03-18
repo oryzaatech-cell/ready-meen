@@ -15,29 +15,31 @@ export default function OrderTimeline({ currentStatus }) {
           <div key={step} className="flex-1 flex items-center">
             <div className="flex flex-col items-center w-full">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-300 ${
+                className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold border-2 transition-all duration-500 ${
                   isCompleted
-                    ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm shadow-emerald-200'
+                    ? 'bg-gradient-to-br from-primary-500 to-primary-600 border-primary-500 text-white shadow-md shadow-primary-500/20'
                     : isCancelled
-                    ? 'bg-red-50 border-red-300 text-red-600'
-                    : 'bg-gray-50 border-gray-200 text-gray-400'
-                } ${isCurrent ? 'ring-4 ring-emerald-100 scale-110' : ''}`}
+                    ? 'bg-red-50 border-red-300 text-red-400'
+                    : 'bg-surface-50 border-surface-200 text-surface-400'
+                } ${isCurrent ? 'ring-[3px] ring-primary-100 scale-110' : ''}`}
               >
-                {isCompleted ? <Check size={14} strokeWidth={3} /> : idx + 1}
+                {isCompleted ? <Check size={15} strokeWidth={3} /> : idx + 1}
               </div>
               <span
-                className={`text-[10px] mt-1.5 text-center leading-tight font-medium ${
-                  isCompleted ? 'text-emerald-700' : 'text-gray-400'
+                className={`text-[10px] mt-2 text-center leading-tight font-semibold transition-colors duration-300 ${
+                  isCompleted ? 'text-primary-700' : 'text-surface-400'
                 }`}
               >
                 {STATUS_LABELS[step]}
               </span>
             </div>
             {idx < TIMELINE_STEPS.length - 1 && (
-              <div className="relative h-0.5 flex-1 mx-1 bg-gray-200 rounded-full overflow-hidden">
+              <div className="relative h-[3px] flex-1 mx-1.5 bg-surface-100 rounded-full overflow-hidden">
                 <div
-                  className={`absolute inset-y-0 left-0 bg-emerald-600 rounded-full transition-all duration-500 ${
-                    idx < currentIdx && !isCancelled ? 'w-full' : 'w-0'
+                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out ${
+                    idx < currentIdx && !isCancelled
+                      ? 'w-full bg-gradient-to-r from-primary-500 to-primary-400'
+                      : 'w-0'
                   }`}
                 />
               </div>
