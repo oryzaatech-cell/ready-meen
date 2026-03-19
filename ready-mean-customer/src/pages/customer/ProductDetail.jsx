@@ -85,7 +85,7 @@ export default function ProductDetail() {
 
   return (
     <PageLayout>
-      <div className="max-w-lg mx-auto space-y-5">
+      <div className="max-w-lg mx-auto space-y-5 pb-28 md:pb-20">
         {/* Back button */}
         <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors min-h-[44px]">
           <ChevronLeft size={18} />
@@ -228,7 +228,7 @@ export default function ProductDetail() {
             <p className="text-xs text-gray-400 mt-1">Check back later for fresh stock</p>
           </div>
         ) : (
-          <div className="sticky bottom-20 md:bottom-4 bg-white/95 backdrop-blur-lg rounded-2xl border border-gray-100 p-4 shadow-lg shadow-gray-200/50 flex items-center justify-between">
+          <div className="fixed bottom-20 md:bottom-4 left-0 right-0 mx-auto max-w-lg px-4 z-30"><div className="bg-white/95 backdrop-blur-lg rounded-2xl border border-gray-100 p-4 shadow-lg shadow-gray-200/50 flex items-center justify-between">
             <div>
               <div className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Total</div>
               <div className="text-2xl font-bold text-primary-700">{formatCurrency(total)}</div>
@@ -243,7 +243,7 @@ export default function ProductDetail() {
                 </>
               )}
             </Button>
-          </div>
+          </div></div>
         )}
       </div>
     </PageLayout>
