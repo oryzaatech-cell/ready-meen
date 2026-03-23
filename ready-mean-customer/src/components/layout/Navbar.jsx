@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useCart } from '../../context/CartContext';
 
 export default function Navbar() {
   const { signOut, isAuthenticated } = useAuth();
+  const { itemCount } = useCart();
 
   return (
     <nav className="bg-white/90 backdrop-blur-xl border-b border-gray-100/50 sticky top-0 z-40 shadow-[0_1px_8px_rgba(0,0,0,0.03)]">
@@ -23,6 +25,14 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-1">
+            <Link to="/cart" className="relative p-2.5 rounded-xl hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center mr-1">
+              <ShoppingCart size={20} className="text-gray-600" />
+              {itemCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 bg-primary-600 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
             {isAuthenticated ? (
               <>
                 <Link to="/profile" className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">

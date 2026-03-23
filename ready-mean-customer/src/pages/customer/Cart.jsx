@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, Minus, Plus, ArrowRight, Fish } from 'lucide-react';
+import { Trash2, ShoppingBag, Minus, Plus, ArrowRight, Fish, ChevronLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import PageLayout from '../../components/layout/PageLayout';
 import Button from '../../components/ui/Button';
@@ -30,7 +30,13 @@ export default function Cart() {
 
   return (
     <PageLayout>
-      <div className="max-w-lg mx-auto space-y-3">
+      <div className="max-w-lg mx-auto space-y-3 pb-28 md:pb-20">
+        {/* Back button */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors min-h-[44px]">
+          <ChevronLeft size={18} />
+          Back
+        </button>
+
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div>

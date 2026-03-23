@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { User, Phone, LogOut, Plus, MapPin, Check, Pencil } from 'lucide-react';
+import { User, Phone, LogOut, Plus, MapPin, Check, Pencil, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
@@ -13,6 +14,7 @@ const MAX_ADDRESSES = 3;
 
 export default function CustomerProfile() {
   const { user, signOut, saveProfile } = useAuth();
+  const navigate = useNavigate();
   const { get, post, put, del } = useApi();
   const [name, setName] = useState(user?.name || '');
   const [editing, setEditing] = useState(false);
@@ -65,7 +67,13 @@ export default function CustomerProfile() {
 
   return (
     <PageLayout>
-      <div className="max-w-sm mx-auto space-y-3">
+      <div className="max-w-sm mx-auto space-y-3 pb-28 md:pb-20">
+        {/* Back button */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors min-h-[44px]">
+          <ChevronLeft size={18} />
+          Back
+        </button>
+
         <h1 className="text-xl font-bold text-gray-900">Profile</h1>
 
         {/* User card */}

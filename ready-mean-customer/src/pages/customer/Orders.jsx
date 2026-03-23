@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, ChevronRight, Fish, Package, RefreshCw } from 'lucide-react';
+import { ClipboardList, ChevronRight, Fish, Package, RefreshCw, ChevronLeft } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
@@ -35,7 +35,13 @@ export default function CustomerOrders() {
 
   return (
     <PageLayout>
-      <div className="max-w-lg mx-auto space-y-3">
+      <div className="max-w-lg mx-auto space-y-3 pb-28 md:pb-20">
+        {/* Back button */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors min-h-[44px]">
+          <ChevronLeft size={18} />
+          Back
+        </button>
+
         <div className="mb-1">
           <h1 className="text-xl font-bold text-gray-900">My Orders</h1>
           <p className="text-xs text-gray-400 mt-0.5">

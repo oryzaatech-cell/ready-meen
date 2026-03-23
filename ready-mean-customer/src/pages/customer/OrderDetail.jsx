@@ -56,14 +56,15 @@ export default function CustomerOrderDetail() {
   return (
     <PageLayout>
       <div className="max-w-lg mx-auto space-y-4">
+        {/* Back button */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors min-h-[44px] mb-2">
+          <ChevronLeft size={18} />
+          Back
+        </button>
+
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/orders')} className="p-1 min-w-[44px] min-h-[44px] flex items-center justify-center">
-              <ChevronLeft size={20} className="text-gray-500" />
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">Order #{order.id}</h1>
-          </div>
+          <h1 className="text-xl font-bold text-gray-900">Order #{order.id}</h1>
           <OrderStatusBadge status={order.status} />
         </div>
 
