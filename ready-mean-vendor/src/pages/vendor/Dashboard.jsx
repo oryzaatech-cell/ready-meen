@@ -1,12 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Copy, Share2, Check, Settings, LogOut, ChevronUp, ClipboardList, IndianRupee, Hash, MapPin, Store } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Copy, Share2, Check, Settings, LogOut, ChevronUp, ClipboardList, IndianRupee, Hash, MapPin, Store, RefreshCw } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Spinner from '../../components/ui/Spinner';
+import { DashboardSkeleton } from '../../components/ui/Skeleton';
 import formatCurrency from '../../shared/formatCurrency';
 import InstallBanner from '../../components/InstallBanner';
 
@@ -29,6 +30,17 @@ export default function VendorDashboard() {
   const inviteLink = vendorCode ? `${customerAppUrl}/join/${vendorCode}` : '';
   const commissionRate = Number(user?.commission_rate) || 0;
 
+  const loadData = useCallback(async () => {
+    try {
+      const ordersRes = await get('/orders?limit=100');
+      setOrders(ordersRes.orders || []);
+    } catch (err) {
+      console.error('Dashboard load error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => { loadData(); }, []);
 
   useEffect(() => {
@@ -41,16 +53,7 @@ export default function VendorDashboard() {
     }
   }, [user]);
 
-  async function loadData() {
-    try {
-      const ordersRes = await get('/orders?limit=100');
-      setOrders(ordersRes.orders || []);
-    } catch (err) {
-      console.error('Dashboard load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { refreshing } = usePullToRefresh(loadData);
 
   const { todayOrderCount, todayEarnings } = useMemo(() => {
     const now = new Date();
@@ -109,7 +112,7 @@ export default function VendorDashboard() {
   }
 
   if (loading) {
-    return <PageLayout><div className="flex justify-center py-12"><Spinner /></div></PageLayout>;
+    return <PageLayout><DashboardSkeleton /></PageLayout>;
   }
 
   const displayName = user?.shop_name || user?.name || 'Vendor';
@@ -139,6 +142,12 @@ export default function VendorDashboard() {
           {profileOpen ? <ChevronUp size={18} /> : <Settings size={17} />}
         </button>
       </div>
+
+      {refreshing && (
+        <div className="flex justify-center py-2 -mt-4 mb-2">
+          <RefreshCw size={16} className="text-primary-500 animate-spin" />
+        </div>
+      )}
 
       {/* Share Code Card — Hero */}
       {vendorCode && (

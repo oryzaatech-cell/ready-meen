@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList, ChevronRight, Clock } from 'lucide-react';
+import { ClipboardList, ChevronRight, Clock, RefreshCw } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
-import Spinner from '../../components/ui/Spinner';
+import { OrderListSkeleton } from '../../components/ui/Skeleton';
 import formatCurrency from '../../shared/formatCurrency';
 
 const statusFilters = ['all', 'placed', 'accepted', 'processing', 'ready', 'delivered', 'cancelled'];
@@ -16,17 +17,25 @@ export default function VendorOrders() {
   const [loading, setLoading] = useState(true);
   const { get } = useApi();
 
-  useEffect(() => {
-    get('/orders')
-      .then(({ orders: data }) => setOrders(data || []))
-      .catch((err) => console.error('Failed to load orders:', err))
-      .finally(() => setLoading(false));
+  const loadOrders = useCallback(async () => {
+    try {
+      const { orders: data } = await get('/orders');
+      setOrders(data || []);
+    } catch (err) {
+      console.error('Failed to load orders:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { loadOrders(); }, []);
+
+  const { refreshing } = usePullToRefresh(loadOrders);
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
   if (loading) {
-    return <PageLayout><div className="flex justify-center py-12"><Spinner /></div></PageLayout>;
+    return <PageLayout><div className="animate-slide-up"><div className="h-5 w-32 bg-surface-200/60 rounded-lg animate-pulse mb-1" /><div className="h-3 w-24 bg-surface-200/60 rounded animate-pulse mb-4" /><div className="flex gap-1.5 mb-4">{[1,2,3,4].map(i=><div key={i} className="h-8 w-16 bg-surface-200/60 rounded-xl animate-pulse" />)}</div></div><OrderListSkeleton count={3} /></PageLayout>;
   }
 
   return (
@@ -56,6 +65,12 @@ export default function VendorOrders() {
           );
         })}
       </div>
+
+      {refreshing && (
+        <div className="flex justify-center py-2">
+          <RefreshCw size={16} className="text-primary-500 animate-spin" />
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">

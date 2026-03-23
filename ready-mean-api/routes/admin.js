@@ -6,12 +6,12 @@ import { updateOrderStatus } from '../services/orderService.js';
 
 const router = Router();
 
-const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'admin-secret-key';
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
 
 // Admin auth: accept either JWT (admin role) or X-Admin-Key header
 router.use((req, res, next) => {
   const apiKey = req.headers['x-admin-key'];
-  if (apiKey && apiKey === ADMIN_API_KEY) {
+  if (ADMIN_API_KEY && apiKey && apiKey === ADMIN_API_KEY) {
     return next();
   }
   // Fall back to JWT auth

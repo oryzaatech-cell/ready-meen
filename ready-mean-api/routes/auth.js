@@ -237,12 +237,10 @@ router.post('/profile', authenticateUser, async (req, res) => {
         dbId = data.id;
       }
     } else {
-      const isAdmin = selectedRole === 'admin';
       const userData = {
         name: name.trim(),
         mobile: mobile || req.user.mobile || null,
         auth_id: authId,
-        is_admin: isAdmin,
       };
 
       if (linkedVendorId) {

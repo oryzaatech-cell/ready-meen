@@ -51,7 +51,7 @@ router.get('/', authenticateUser, async (req, res) => {
 
     let query = supabase
       .from('order_info')
-      .select('*')
+      .select('id, user_id, vendor_id, status, total_amt, shipping_address, payment_method, created_at')
       .order('created_at', { ascending: false })
       .range(Number(offset), Number(offset) + Number(limit) - 1);
 

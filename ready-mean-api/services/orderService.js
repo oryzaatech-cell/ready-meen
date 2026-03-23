@@ -57,8 +57,13 @@ export async function placeOrder({ user_id, items, shipping_address, vendor_id, 
     });
   }
 
-  // Determine vendor_id from the first product if not explicitly provided
-  const resolvedVendorId = vendor_id || validatedItems[0]?._product?.vendor_id || null;
+  // Verify all products belong to the same vendor
+  const vendorIds = [...new Set(validatedItems.map(i => i._product.vendor_id))];
+  if (vendorIds.length > 1) {
+    return { error: 'All items must be from the same vendor' };
+  }
+
+  const resolvedVendorId = vendor_id || vendorIds[0] || null;
 
   // Fetch vendor's commission rate and snapshot it
   let commissionRate = 0;
@@ -98,7 +103,40 @@ export async function placeOrder({ user_id, items, shipping_address, vendor_id, 
     return { error: 'Failed to create order' };
   }
 
-  // Create order items
+  // Deduct stock atomically — only succeeds if enough stock remains
+  for (const item of validatedItems) {
+    const { data: updated, error: stockError } = await supabase
+      .from('product_info')
+      .update({ stock_qty: item._product.stock_qty - item.qty })
+      .eq('id', item.product_id)
+      .gte('stock_qty', item.qty)  // Only deduct if stock >= requested qty
+      .select('id')
+      .single();
+
+    if (stockError || !updated) {
+      // Stock was grabbed by another order — restore any already-deducted items
+      for (const prev of validatedItems) {
+        if (prev.product_id === item.product_id) break;
+        // Re-read current stock and restore
+        const { data: current } = await supabase
+          .from('product_info')
+          .select('stock_qty')
+          .eq('id', prev.product_id)
+          .single();
+        if (current) {
+          await supabase
+            .from('product_info')
+            .update({ stock_qty: current.stock_qty + prev.qty })
+            .eq('id', prev.product_id);
+        }
+      }
+      // Clean up the order
+      await supabase.from('order_info').delete().eq('id', order.id);
+      return { error: `Sorry, ${item._product.name} just sold out. Please try again.` };
+    }
+  }
+
+  // Create order items (stock is already secured)
   const orderItemRows = validatedItems.map(i => ({
     order_id: order.id,
     product_id: i.product_id,
@@ -114,18 +152,22 @@ export async function placeOrder({ user_id, items, shipping_address, vendor_id, 
 
   if (itemsError) {
     console.error('Order items insert error:', itemsError);
-    // Clean up the order since items failed
+    // Restore stock since items insert failed
+    for (const item of validatedItems) {
+      const { data: current } = await supabase
+        .from('product_info')
+        .select('stock_qty')
+        .eq('id', item.product_id)
+        .single();
+      if (current) {
+        await supabase
+          .from('product_info')
+          .update({ stock_qty: current.stock_qty + item.qty })
+          .eq('id', item.product_id);
+      }
+    }
     await supabase.from('order_info').delete().eq('id', order.id);
     return { error: 'Failed to create order items' };
-  }
-
-  // Deduct stock
-  for (const item of validatedItems) {
-    const product = item._product;
-    await supabase
-      .from('product_info')
-      .update({ stock_qty: product.stock_qty - item.qty })
-      .eq('id', product.id);
   }
 
   return { order };
@@ -149,12 +191,18 @@ export async function updateOrderStatus({ orderId, newStatus }) {
     return { error: `Invalid status transition: ${order.status} -> ${newStatus}` };
   }
 
+  // Atomic update — only succeeds if status hasn't changed since we read it
   const { data: updated, error: updateError } = await supabase
     .from('order_info')
     .update({ status: newStatus })
     .eq('id', orderId)
+    .eq('status', order.status)
     .select()
     .single();
+
+  if (!updated && !updateError) {
+    return { error: 'Order status was already changed. Please refresh and try again.' };
+  }
 
   if (updateError) {
     return { error: 'Failed to update order status' };

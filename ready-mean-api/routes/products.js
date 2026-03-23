@@ -28,7 +28,7 @@ router.get('/', optionalAuth, async (req, res) => {
 
     let query = supabase
       .from('product_info')
-      .select('*')
+      .select('id, name, price, stock_qty, image_url, vendor_id, category, cutting_options, cleaning_charge, created_at')
       .order('created_at', { ascending: false });
 
     if (category) query = query.eq('category', category);
@@ -60,7 +60,7 @@ router.get('/mine', authenticateUser, requireRole('vendor'), async (req, res) =>
   try {
     const { data, error } = await supabase
       .from('product_info')
-      .select('*')
+      .select('id, name, price, stock_qty, image_url, category, cutting_options, cleaning_charge, description, created_at')
       .eq('vendor_id', req.user.db_id)
       .order('created_at', { ascending: false });
 
@@ -139,8 +139,14 @@ router.post('/', authenticateUser, requireRole('vendor', 'admin'), async (req, r
   try {
     const { name, category, description, image_url, price, stock_qty, cleaning_charge, cutting_options } = req.body;
 
-    if (!name || !price) {
+    if (!name || price === undefined || price === null) {
       return res.status(400).json({ error: 'Name and price are required' });
+    }
+    if (typeof price !== 'number' || price < 0) {
+      return res.status(400).json({ error: 'Price must be a positive number' });
+    }
+    if (stock_qty !== undefined && (typeof stock_qty !== 'number' || stock_qty < 0)) {
+      return res.status(400).json({ error: 'Stock quantity must be a positive number' });
     }
 
     const { data, error } = await supabase
@@ -188,6 +194,13 @@ router.put('/:id', authenticateUser, requireRole('vendor', 'admin'), async (req,
     }
 
     const { name, category, description, image_url, price, stock_qty, cleaning_charge, cutting_options } = req.body;
+
+    if (price !== undefined && (typeof price !== 'number' || price < 0)) {
+      return res.status(400).json({ error: 'Price must be a positive number' });
+    }
+    if (stock_qty !== undefined && (typeof stock_qty !== 'number' || stock_qty < 0)) {
+      return res.status(400).json({ error: 'Stock quantity must be a positive number' });
+    }
 
     const updates = {};
     if (name !== undefined) updates.name = name;

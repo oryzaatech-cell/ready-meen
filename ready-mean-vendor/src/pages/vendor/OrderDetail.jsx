@@ -35,11 +35,15 @@ export default function VendorOrderDetail() {
     const next = getNextStatus(order.status);
     if (!next) return;
 
+    // Optimistic update — show new status instantly
+    const prevStatus = order.status;
+    setOrder(prev => ({ ...prev, status: next }));
     setUpdating(true);
     try {
       await put(`/orders/${id}/status`, { status: next });
-      loadOrder();
     } catch (err) {
+      // Revert on failure
+      setOrder(prev => ({ ...prev, status: prevStatus }));
       console.error('Status update failed:', err);
     } finally {
       setUpdating(false);

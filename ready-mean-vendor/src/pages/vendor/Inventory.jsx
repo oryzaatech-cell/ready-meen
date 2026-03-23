@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Package, Fish, Pencil, Trash2, Ban, RotateCcw } from 'lucide-react';
+import { PlusCircle, Package, Fish, Pencil, Trash2, Ban, RotateCcw, RefreshCw } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import Spinner from '../../components/ui/Spinner';
+import { ProductListSkeleton } from '../../components/ui/Skeleton';
 import ImageZoom from '../../components/ui/ImageZoom';
 import formatCurrency from '../../shared/formatCurrency';
 
@@ -16,23 +17,26 @@ export default function VendorProducts() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const { get, put, del } = useApi();
 
-  function loadProducts() {
-    get('/products/mine')
-      .then(({ products: data }) => setProducts(data || []))
-      .catch((err) => console.error('Failed to load products:', err))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    loadProducts();
+  const loadProducts = useCallback(async () => {
+    try {
+      const { products: data } = await get('/products/mine');
+      setProducts(data || []);
+    } catch (err) {
+      console.error('Failed to load products:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Re-fetch when vendor navigates back to this page
+  useEffect(() => { loadProducts(); }, []);
+
   useEffect(() => {
     const handleFocus = () => loadProducts();
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  const { refreshing } = usePullToRefresh(loadProducts);
 
   async function handleToggleSold(product) {
     setActionLoading(product.id);
@@ -61,7 +65,7 @@ export default function VendorProducts() {
   }
 
   if (loading) {
-    return <PageLayout><div className="flex justify-center py-12"><Spinner /></div></PageLayout>;
+    return <PageLayout><div className="animate-slide-up"><div className="flex items-center justify-between mb-1"><div className="h-5 w-40 bg-surface-200/60 rounded-lg animate-pulse" /><div className="h-8 w-16 bg-surface-200/60 rounded-lg animate-pulse" /></div><div className="h-3 w-24 bg-surface-200/60 rounded mt-1.5 mb-4 animate-pulse" /></div><ProductListSkeleton count={3} /></PageLayout>;
   }
 
   return (
@@ -79,6 +83,12 @@ export default function VendorProducts() {
         </div>
         <p className="text-xs text-surface-400 mb-4">{products.length} product{products.length !== 1 ? 's' : ''} listed</p>
       </div>
+
+      {refreshing && (
+        <div className="flex justify-center py-2">
+          <RefreshCw size={16} className="text-primary-500 animate-spin" />
+        </div>
+      )}
 
       {products.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">

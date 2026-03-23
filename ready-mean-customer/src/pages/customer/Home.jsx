@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Fish, X, Waves, ShoppingBag } from 'lucide-react';
+import { Search, Fish, X, Waves, ShoppingBag, RefreshCw } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../context/CartContext';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import ProductCard from '../../components/ProductCard';
-import Spinner from '../../components/ui/Spinner';
+import { ProductGridSkeleton } from '../../components/ui/Skeleton';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -17,16 +18,7 @@ export default function Home() {
   const { itemCount } = useCart();
   const navigate = useNavigate();
 
-  useEffect(() => { loadProducts(); }, []);
-
-  useEffect(() => {
-    const handleFocus = () => loadProducts();
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, []);
-
-  async function loadProducts() {
-    setLoading(true);
+  const loadProducts = useCallback(async () => {
     try {
       const { products: data } = await get('/products');
       setProducts(data || []);
@@ -35,7 +27,17 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => { loadProducts(); }, []);
+
+  useEffect(() => {
+    const handleFocus = () => loadProducts();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  const { refreshing } = usePullToRefresh(loadProducts);
 
   const filtered = search
     ? products.filter((p) => p.name?.toLowerCase().includes(search.toLowerCase()))
@@ -106,9 +108,16 @@ export default function Home() {
           </div>
         )}
 
+        {/* Pull-to-refresh indicator */}
+        {refreshing && (
+          <div className="flex justify-center py-2">
+            <RefreshCw size={16} className="text-primary-500 animate-spin" />
+          </div>
+        )}
+
         {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-20"><Spinner /></div>
+          <ProductGridSkeleton count={6} />
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 animate-fade-up">
             <div className="w-20 h-20 bg-gradient-to-br from-primary-50 to-sky-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
