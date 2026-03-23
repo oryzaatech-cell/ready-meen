@@ -10,7 +10,7 @@ export default function Navbar() {
     { to: '/products/add', label: 'Add Product' },
     { to: '/products', label: 'Products' },
     { to: '/orders', label: 'Orders' },
-    { to: '/', label: 'Dashboard' },
+    { to: '/dashboard', label: 'Dashboard' },
   ];
 
   return (
@@ -29,9 +29,7 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-0.5">
             {navLinks.map(({ to, label }) => {
-              const isActive = to === '/'
-                ? location.pathname === '/'
-                : location.pathname.startsWith(to);
+              const isActive = location.pathname === to;
               return (
                 <Link
                   key={to}

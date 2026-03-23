@@ -5,7 +5,7 @@ const links = [
   { to: '/products/add', icon: PlusCircle, label: 'Add Product' },
   { to: '/products', icon: Package, label: 'Products' },
   { to: '/orders', icon: ClipboardList, label: 'Orders' },
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 
