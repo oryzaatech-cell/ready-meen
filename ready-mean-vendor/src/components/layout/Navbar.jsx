@@ -18,7 +18,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           {/* Brand */}
-          <Link to="/" className="flex items-center group">
+          <Link to="/products/add" className="flex items-center group">
             <img src="/logo-transparent.png" alt="Ready Meen" className="h-16 w-16 object-contain drop-shadow -mr-3" />
             <div className="flex flex-col items-center">
               <span className="text-sm font-extrabold bg-gradient-to-r from-[#083850] via-[#286890] to-[#289098] bg-clip-text text-transparent leading-tight">Ready മീൻ</span>

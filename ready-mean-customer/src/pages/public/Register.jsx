@@ -74,7 +74,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-primary-50 via-white to-white flex flex-col px-5 pt-12 pb-8">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-primary-50 via-white to-white flex flex-col px-5 pt-12 pb-8" style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))' }}>
       <div className="w-full max-w-sm mx-auto">
         {/* Logo + branding (same as landing page) */}
         <Link to="/" className="flex items-center -ml-7 mb-2 w-fit">

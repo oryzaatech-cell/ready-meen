@@ -19,9 +19,10 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 flex items-center gap-3 bg-white border shadow-lg rounded-lg px-4 py-3 transition-all duration-300 ${
+      className={`fixed top-4 right-4 left-4 sm:left-auto sm:min-w-[300px] z-50 flex items-center gap-3 bg-white border shadow-lg rounded-xl px-4 py-3 transition-all duration-300 ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
       }`}
+      style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
     >
       {icons[type]}
       <span className="text-sm text-gray-800">{message}</span>

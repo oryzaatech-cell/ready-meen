@@ -24,7 +24,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
             <X size={18} className="text-gray-400" />
           </button>
         </div>
-        <div className="p-4">{children}</div>
+        <div className="p-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>{children}</div>
       </div>
     </div>
   );

@@ -228,7 +228,7 @@ export default function ProductDetail() {
             <p className="text-xs text-gray-400 mt-1">Check back later for fresh stock</p>
           </div>
         ) : (
-          <div className="fixed bottom-20 md:bottom-4 left-0 right-0 mx-auto max-w-lg px-4 z-30"><div className="bg-white/95 backdrop-blur-lg rounded-2xl border border-gray-100 p-4 shadow-lg shadow-gray-200/50 flex items-center justify-between">
+          <div className="fixed left-0 right-0 mx-auto max-w-lg px-4 z-30 md:bottom-4" style={{ bottom: 'calc(var(--bottom-nav-h, 66px) + env(safe-area-inset-bottom, 0px) + 8px)' }}><div className="bg-white/95 backdrop-blur-lg rounded-2xl border border-gray-100 p-4 shadow-lg shadow-gray-200/50 flex items-center justify-between">
             <div>
               <div className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Total</div>
               <div className="text-2xl font-bold text-primary-700">{formatCurrency(total)}</div>

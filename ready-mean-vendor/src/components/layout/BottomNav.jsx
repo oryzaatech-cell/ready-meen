@@ -5,7 +5,7 @@ const tabs = [
   { to: '/products/add', icon: PlusCircle, label: 'Add', labelMl: 'ചേർക്കുക', end: true },
   { to: '/products', icon: Package, label: 'Products', labelMl: 'ഉൽപ്പന്നങ്ങൾ', end: false },
   { to: '/orders', icon: ClipboardList, label: 'Orders', labelMl: 'ഓർഡറുകൾ', end: false },
-  { to: '/', icon: LayoutDashboard, label: 'Home', labelMl: 'ഹോം', end: true },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Home', labelMl: 'ഹോം', end: true },
 ];
 
 export default function BottomNav() {

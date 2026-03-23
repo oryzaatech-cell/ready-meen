@@ -2,13 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bottom-nav-h: 66px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 body {
   min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
 }
 
 /* Bottom nav spacing for PWA */
 .pb-safe {
-  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4rem + var(--safe-bottom));
 }
 
 /* Landing page animations */

@@ -101,7 +101,7 @@ export default function Cart() {
         ))}
 
         {/* Checkout - sticky */}
-        <div className="sticky bottom-20 md:bottom-4 bg-white/95 backdrop-blur-xl rounded-2xl border border-gray-100 p-4 shadow-xl shadow-gray-200/60">
+        <div className="sticky md:bottom-4 bg-white/95 backdrop-blur-xl rounded-2xl border border-gray-100 p-4 shadow-xl shadow-gray-200/60" style={{ bottom: 'calc(var(--bottom-nav-h, 66px) + env(safe-area-inset-bottom, 0px) + 8px)' }}>
           <div className="flex items-center justify-between mb-3">
             <div>
               <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Total</span>

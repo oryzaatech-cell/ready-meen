@@ -34,7 +34,7 @@ export default function InstallBanner() {
   if (isInstalled || dismissed || (!isInstallable && !isIOS)) return null;
 
   return (
-    <div className="fixed bottom-4 left-3 right-3 md:left-auto md:right-4 md:w-96 z-50 animate-fade-up">
+    <div className="fixed bottom-[5.5rem] md:bottom-4 left-3 right-3 md:left-auto md:right-4 md:w-96 z-50 animate-fade-up">
       <div className="bg-white rounded-2xl shadow-2xl shadow-gray-900/15 border border-gray-100 overflow-hidden">
         {/* Top accent */}
         <div className="h-1 bg-gradient-to-r from-primary-500 via-teal-500 to-primary-600" />

@@ -62,11 +62,20 @@ input, select, textarea {
   }
 }
 
+/* ─── CSS Custom Properties ─── */
+:root {
+  --bottom-nav-h: 4.5rem;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
 /* ─── Safe Area ─── */
-.pt-safe { padding-top: env(safe-area-inset-top, 0px); }
-.pl-safe { padding-left: env(safe-area-inset-left, 0px); }
-.pr-safe { padding-right: env(safe-area-inset-right, 0px); }
-.pb-safe { padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
+.pt-safe { padding-top: var(--safe-top); }
+.pl-safe { padding-left: var(--safe-left); }
+.pr-safe { padding-right: var(--safe-right); }
+.pb-safe { padding-bottom: calc(var(--bottom-nav-h) + var(--safe-bottom)); }
 
 /* ─── Glass Morphism ─── */
 .glass {

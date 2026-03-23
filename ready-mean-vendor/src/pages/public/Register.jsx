@@ -35,7 +35,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-primary-50/40 via-white to-white px-6 py-10 overflow-hidden">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-primary-50/40 via-white to-white px-6 py-10 overflow-hidden" style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom, 0px))' }}>
 
       {/* Logo — top left */}
       <div className="animate-slide-up">
