@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ClipboardList, ChevronRight, Clock, RefreshCw } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
+import { useOrderBadge } from '../../context/OrderBadgeContext';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
@@ -16,6 +17,7 @@ export default function VendorOrders() {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const { get } = useApi();
+  const { markSeen } = useOrderBadge();
 
   const loadOrders = useCallback(async () => {
     try {
@@ -28,7 +30,7 @@ export default function VendorOrders() {
     }
   }, []);
 
-  useEffect(() => { loadOrders(); }, []);
+  useEffect(() => { loadOrders(); markSeen(); }, []);
 
   const { refreshing } = usePullToRefresh(loadOrders);
 

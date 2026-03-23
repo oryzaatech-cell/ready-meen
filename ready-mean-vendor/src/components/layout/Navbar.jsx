@@ -1,10 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useOrderBadge } from '../../context/OrderBadgeContext';
 
 export default function Navbar() {
   const { signOut, isAuthenticated } = useAuth();
   const location = useLocation();
+  const { newCount } = useOrderBadge();
 
   const navLinks = [
     { to: '/products/add', label: 'Add Product' },
@@ -40,7 +42,14 @@ export default function Navbar() {
                       : 'text-surface-500 hover:text-surface-700 hover:bg-surface-50'
                   }`}
                 >
-                  {label}
+                  <span className="relative">
+                    {label}
+                    {label === 'Orders' && newCount > 0 && (
+                      <span className="absolute -top-1.5 -right-4 text-white text-[8px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 bg-red-500">
+                        {newCount > 9 ? '9+' : newCount}
+                      </span>
+                    )}
+                  </span>
                   {isActive && (
                     <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-primary-500 rounded-full" />
                   )}

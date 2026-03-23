@@ -1,14 +1,16 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Package, ClipboardList, PlusCircle } from 'lucide-react';
+import { useOrderBadge } from '../../context/OrderBadgeContext';
 
 const tabs = [
   { to: '/products/add', icon: PlusCircle, label: 'Add', labelMl: 'ചേർക്കുക', end: true },
   { to: '/products', icon: Package, label: 'Products', labelMl: 'ഉൽപ്പന്നങ്ങൾ', end: true },
-  { to: '/orders', icon: ClipboardList, label: 'Orders', labelMl: 'ഓർഡറുകൾ', end: false },
+  { to: '/orders', icon: ClipboardList, label: 'Orders', labelMl: 'ഓർഡറുകൾ', end: false, badgeKey: 'orders' },
   { to: '/dashboard', icon: LayoutDashboard, label: 'Home', labelMl: 'ഹോം', end: true },
 ];
 
 export default function BottomNav() {
+  const { newCount } = useOrderBadge();
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
       {/* Soft top edge shadow */}
@@ -16,7 +18,7 @@ export default function BottomNav() {
 
       <div className="glass border-t border-white/60 shadow-[0_-1px_20px_rgba(0,0,0,0.04)]">
         <div className="flex items-center justify-around h-[4.5rem] pb-[env(safe-area-inset-bottom,0px)]">
-          {tabs.map(({ to, icon: Icon, label, labelMl, end }) => (
+          {tabs.map(({ to, icon: Icon, label, labelMl, end, badgeKey }) => (
             <NavLink
               key={to}
               to={to}
@@ -37,6 +39,11 @@ export default function BottomNav() {
                       : ''
                   }`}>
                     <Icon size={20} strokeWidth={isActive ? 2.4 : 1.7} className="transition-all duration-300" />
+                    {badgeKey === 'orders' && newCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 text-white text-[8px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 border-2 border-white shadow-sm bg-red-500 animate-pulse">
+                        {newCount > 9 ? '9+' : newCount}
+                      </span>
+                    )}
                   </div>
                   <span className={`text-[10px] leading-tight transition-all duration-200 ${isActive ? 'font-bold' : 'font-medium'}`}>
                     {label}

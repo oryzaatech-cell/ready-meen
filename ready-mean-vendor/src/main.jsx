@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
+import { OrderBadgeProvider } from './context/OrderBadgeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
@@ -11,7 +12,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <OrderBadgeProvider>
+            <App />
+          </OrderBadgeProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>
