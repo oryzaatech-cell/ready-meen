@@ -100,6 +100,14 @@ export default function CustomerOrderDetail() {
             <span>Total</span>
             <span className="text-primary-700">{formatCurrency(order.total_amt)}</span>
           </div>
+          {order.payment_method && (
+            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-50">
+              <span className="text-[11px] text-gray-400">Payment:</span>
+              <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+                {order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Delivery details */}

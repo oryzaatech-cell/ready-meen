@@ -3,13 +3,14 @@ import supabase from '../config/supabase.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { requireRole } from '../middleware/roleCheck.js';
 import { placeOrder, updateOrderStatus } from '../services/orderService.js';
+import { sendNotification } from '../services/notificationService.js';
 
 const router = Router();
 
 // POST /api/orders — Place order (customer)
 router.post('/', authenticateUser, requireRole('customer'), async (req, res) => {
   try {
-    const { items, shipping_address } = req.body;
+    const { items, shipping_address, payment_method } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Order must have at least one item' });
@@ -20,10 +21,20 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
       items,
       shipping_address: shipping_address || null,
       vendor_id: req.user.vendor_id || null,
+      payment_method: payment_method || 'cod',
     });
 
     if (result.error) {
       return res.status(400).json({ error: result.error });
+    }
+
+    // Notify vendor about new order (non-blocking)
+    if (result.order?.vendor_id) {
+      sendNotification(result.order.vendor_id, {
+        title: 'New Order Received!',
+        body: `Order #${result.order.id} — ₹${result.order.total_amt} (${payment_method === 'cod' ? 'COD' : 'Paid'})`,
+        data: { type: 'new_order', order_id: String(result.order.id) },
+      }).catch(() => {});
     }
 
     res.status(201).json({ order: result.order });
@@ -195,6 +206,16 @@ router.put('/:id/status', authenticateUser, requireRole('vendor', 'admin'), asyn
 
     if (result.error) {
       return res.status(400).json({ error: result.error });
+    }
+
+    // Notify customer about status change (non-blocking)
+    if (result.order?.user_id) {
+      const statusLabels = { processing: 'Being Prepared', ready: 'Ready for Delivery', delivered: 'Delivered' };
+      sendNotification(result.order.user_id, {
+        title: `Order ${statusLabels[status] || status}`,
+        body: `Your order #${result.order.id} is now ${statusLabels[status] || status}`,
+        data: { type: 'order_update', order_id: String(result.order.id) },
+      }).catch(() => {});
     }
 
     res.json({ order: result.order });

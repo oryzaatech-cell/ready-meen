@@ -160,6 +160,14 @@ export default function VendorOrderDetail() {
             <span className="text-surface-900">Total</span>
             <span className="text-lg text-gradient">{formatCurrency(order.total_amt)}</span>
           </div>
+          {order.payment_method && (
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-[11px] text-surface-400">Payment:</span>
+              <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-lg ring-1 ring-amber-200/60">
+                {order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method}
+              </span>
+            </div>
+          )}
         </Card>
 
         {/* Action */}

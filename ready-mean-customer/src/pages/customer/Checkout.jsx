@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ShieldCheck } from 'lucide-react';
+import { Plus, ShieldCheck, Banknote } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
@@ -23,6 +23,7 @@ export default function Checkout() {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addingSaving, setAddingSaving] = useState(false);
+  const paymentMethod = 'cod';
 
   useEffect(() => {
     if (items.length === 0) {
@@ -84,6 +85,7 @@ export default function Checkout() {
       await post('/orders', {
         items: orderItems,
         shipping_address: shippingAddress,
+        payment_method: paymentMethod,
       });
 
       clearCart();
@@ -132,6 +134,23 @@ export default function Checkout() {
               )}
             </>
           )}
+        </div>
+
+        {/* Payment Method */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+          <h3 className="font-semibold text-sm text-gray-900 mb-3">Payment Method</h3>
+          <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-primary-500 bg-primary-50/40">
+            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+              <Banknote size={20} className="text-green-600" />
+            </div>
+            <div className="flex-1">
+              <span className="text-sm font-semibold text-gray-900">Cash on Delivery</span>
+              <p className="text-[11px] text-gray-400 mt-0.5">Pay when your order is delivered</p>
+            </div>
+            <div className="w-5 h-5 rounded-full border-2 border-primary-500 flex items-center justify-center">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary-500" />
+            </div>
+          </div>
         </div>
 
         {/* Summary */}

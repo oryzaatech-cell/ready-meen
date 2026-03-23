@@ -4,7 +4,7 @@ import { isValidTransition } from '../shared/constants.js';
 /**
  * Place a new order — validates stock, calculates totals, creates order + items
  */
-export async function placeOrder({ user_id, items, shipping_address, vendor_id }) {
+export async function placeOrder({ user_id, items, shipping_address, vendor_id, payment_method = 'cod' }) {
   let totalAmt = 0;
   const validatedItems = [];
 
@@ -79,6 +79,7 @@ export async function placeOrder({ user_id, items, shipping_address, vendor_id }
     status: 'placed',
     total_amt: totalAmt,
     shipping_address,
+    payment_method: payment_method || 'cod',
     commission_rate: commissionRate,
     commission_amt: commissionAmt,
   };
