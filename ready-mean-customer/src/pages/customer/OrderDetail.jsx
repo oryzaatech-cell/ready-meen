@@ -4,6 +4,7 @@ import { ChevronLeft, MapPin, Phone } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
 import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
 import OrderTimeline from '../../components/OrderTimeline';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
 import Spinner from '../../components/ui/Spinner';
@@ -18,6 +19,7 @@ export default function CustomerOrderDetail() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const { get, put } = useApi();
 
   useEffect(() => { loadOrder(); }, [id]);
@@ -38,6 +40,7 @@ export default function CustomerOrderDetail() {
     try {
       await put(`/orders/${id}/cancel`, {});
       loadOrder();
+      setShowCancelModal(false);
     } catch (err) {
       console.error('Failed to cancel:', err);
     } finally {
@@ -138,11 +141,27 @@ export default function CustomerOrderDetail() {
         })()}
 
         {canCancel(order.status) && (
-          <Button variant="danger" onClick={handleCancel} loading={cancelling} className="w-full rounded-xl min-h-[48px]">
+          <Button variant="danger" onClick={() => setShowCancelModal(true)} className="w-full rounded-xl min-h-[48px]">
             Cancel Order
           </Button>
         )}
       </div>
+
+      <Modal isOpen={showCancelModal} onClose={() => setShowCancelModal(false)} title="Cancel Order">
+        <div className="space-y-4 pb-2">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to cancel this order? This action cannot be undone.
+          </p>
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" onClick={() => setShowCancelModal(false)} className="flex-1 rounded-xl min-h-[44px]">
+              Wait, Keep It
+            </Button>
+            <Button variant="danger" onClick={handleCancel} loading={cancelling} className="flex-1 rounded-xl min-h-[44px]">
+              Yes, Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </PageLayout>
   );
 }
