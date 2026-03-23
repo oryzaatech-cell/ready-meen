@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ShieldCheck, Banknote } from 'lucide-react';
+import { Plus, ShieldCheck, Banknote, ChevronLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useApi } from '../../hooks/useApi';
 import PageLayout from '../../components/layout/PageLayout';
@@ -99,7 +99,13 @@ export default function Checkout() {
 
   return (
     <PageLayout>
-      <div className="max-w-lg mx-auto space-y-4">
+      <div className="max-w-lg mx-auto space-y-4 pb-28 md:pb-20">
+        {/* Back button */}
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors min-h-[44px]">
+          <ChevronLeft size={18} />
+          Back
+        </button>
+
         <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
 
         {/* Address */}

@@ -100,7 +100,7 @@ export async function placeOrder({ user_id, items, shipping_address, vendor_id, 
 
   if (orderError) {
     console.error('Order insert error:', orderError);
-    return { error: 'Failed to create order' };
+    return { error: `Failed to create order: ${orderError.message || orderError.details || 'Unknown DB error'}` };
   }
 
   // Deduct stock atomically — only succeeds if enough stock remains
@@ -167,7 +167,7 @@ export async function placeOrder({ user_id, items, shipping_address, vendor_id, 
       }
     }
     await supabase.from('order_info').delete().eq('id', order.id);
-    return { error: 'Failed to create order items' };
+    return { error: `Failed to create order items: ${itemsError.message}` };
   }
 
   return { order };
