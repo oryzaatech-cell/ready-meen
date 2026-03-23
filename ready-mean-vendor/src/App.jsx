@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import Onboarding from './components/Onboarding';
+import OfflineBanner from './components/OfflineBanner';
 import Spinner from './components/ui/Spinner';
 
 const Login = lazy(() => import('./pages/public/Login'));
@@ -33,6 +34,7 @@ export default function App() {
 
   return (
     <>
+      <OfflineBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/login" element={<Login />} />

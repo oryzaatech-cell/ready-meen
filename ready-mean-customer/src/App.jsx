@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
+import OfflineBanner from './components/OfflineBanner';
 import Spinner from './components/ui/Spinner';
 
 const Landing = lazy(() => import('./pages/public/Landing'));
@@ -29,6 +30,8 @@ export default function App() {
   if (loading) return <PageLoader />;
 
   return (
+    <>
+    <OfflineBanner />
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -47,5 +50,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+    </>
   );
 }
