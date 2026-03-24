@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { Fish } from 'lucide-react';
 import formatCurrency from '../shared/formatCurrency';
 
 export default function ProductCard({ product, onClick }) {
   const soldOut = !product.stock_qty || product.stock_qty <= 0;
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-primary-900/8 hover:-translate-y-1.5 transition-all duration-300 active:scale-[0.97] group border border-gray-100/60"
+      className="bg-white rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-primary-900/8 hover:-translate-y-1 transition-all duration-300 active:scale-[0.97] group border border-gray-100/60 will-change-transform"
     >
       {/* Image */}
       <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
@@ -15,8 +17,9 @@ export default function ProductCard({ product, onClick }) {
           <img
             src={product.image_url}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ease-out ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
             loading="lazy"
+            onLoad={() => setImgLoaded(true)}
           />
         ) : (
           <Fish size={36} className="text-gray-200" />
