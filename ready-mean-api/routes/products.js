@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import supabase from '../config/supabase.js';
 import { authenticateUser } from '../middleware/auth.js';
 import { requireRole } from '../middleware/roleCheck.js';
+import { sendNotification } from '../services/notificationService.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -169,6 +170,23 @@ router.post('/', authenticateUser, requireRole('vendor', 'admin'), async (req, r
       console.error('Product create error:', error);
       return res.status(500).json({ error: 'Failed to create product' });
     }
+
+    // Notify all customers linked to this vendor (non-blocking)
+    const vendorId = req.user.db_id;
+    supabase
+      .from('user_info')
+      .select('id')
+      .eq('vendor_id', vendorId)
+      .then(({ data: customers }) => {
+        for (const customer of (customers || [])) {
+          sendNotification(customer.id, {
+            title: 'New Fish Added!',
+            body: `${data.name} is now available — check it out!`,
+            data: { type: 'new_product', product_id: String(data.id) },
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
 
     res.status(201).json({ product: data });
   } catch (err) {
