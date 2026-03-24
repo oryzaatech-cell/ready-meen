@@ -3,10 +3,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: 'placeholder',
-  projectId: 'placeholder',
-  messagingSenderId: 'placeholder',
-  appId: 'placeholder',
+  apiKey: 'AIzaSyBa-wiRKnMUsgqQwGCfut1whd3VGiP9dzE',
+  authDomain: 'ready-meen.firebaseapp.com',
+  projectId: 'ready-meen',
+  storageBucket: 'ready-meen.firebasestorage.app',
+  messagingSenderId: '126904829631',
+  appId: '1:126904829631:web:02b90f99090e9780d8a80a',
 });
 
 const messaging = firebase.messaging();

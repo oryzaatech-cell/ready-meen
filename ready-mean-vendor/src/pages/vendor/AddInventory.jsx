@@ -386,7 +386,7 @@ export default function AddProduct() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. King Fish, Pomfret"
+                  placeholder="e.g. Ayala, Mathi"
                   value={name}
                   onChange={(e) => { setName(e.target.value); setShowFishSuggestions(true); }}
                   onFocus={() => setShowFishSuggestions(true)}
