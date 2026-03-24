@@ -2,8 +2,6 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
-// Firebase config is injected via the VAPID key handshake —
-// messaging.onBackgroundMessage works once the SDK is initialized
 firebase.initializeApp({
   apiKey: 'placeholder',
   projectId: 'placeholder',
@@ -14,7 +12,8 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const { title, body } = payload.notification || {};
+  const title = payload.data?.title || payload.notification?.title;
+  const body = payload.data?.body || payload.notification?.body;
   if (!title) return;
 
   const options = {

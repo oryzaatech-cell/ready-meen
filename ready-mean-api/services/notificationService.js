@@ -83,8 +83,7 @@ export async function sendNotification(userId, { title, body, data = {} }) {
 
     await firebaseAdmin.messaging().send({
       token: fcmToken,
-      notification: { title, body },
-      data,
+      data: { ...data, title, body },
     });
   } catch (err) {
     console.warn('Push notification failed:', err.message);
