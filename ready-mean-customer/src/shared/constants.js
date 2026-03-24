@@ -21,6 +21,7 @@ export const STATUS_FLOW = {
 
 export const STATUS_LABELS = {
   placed: 'Order Placed',
+  cancel_requested: 'Cancel Requested',
   processing: 'Processing',
   ready: 'Ready for Pickup/Delivery',
   delivered: 'Delivered',
@@ -29,6 +30,7 @@ export const STATUS_LABELS = {
 
 export const STATUS_COLORS = {
   placed: 'yellow',
+  cancel_requested: 'orange',
   processing: 'orange',
   ready: 'green',
   delivered: 'emerald',
@@ -49,4 +51,8 @@ export function getNextStatus(current) {
 
 export function canCancel(status) {
   return status === 'placed';
+}
+
+export function isCancelPending(status) {
+  return status === 'cancel_requested';
 }

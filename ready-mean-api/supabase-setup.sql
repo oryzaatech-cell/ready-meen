@@ -84,7 +84,22 @@ CREATE TABLE IF NOT EXISTS customer_addresses (
 ALTER TABLE customer_addresses DISABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_customer_addresses_user ON customer_addresses(user_id);
 
--- 8. Commission / platform fee columns
+-- 8. In-app notifications
+CREATE TABLE IF NOT EXISTS notifications (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id bigint NOT NULL REFERENCES user_info(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  body text NOT NULL,
+  type text DEFAULT 'order',
+  order_id bigint REFERENCES order_info(id) ON DELETE CASCADE,
+  is_read boolean DEFAULT false,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE notifications DISABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread ON notifications(user_id, is_read);
+
+-- 9. Commission / platform fee columns
 ALTER TABLE vendor_info ADD COLUMN IF NOT EXISTS commission_rate numeric DEFAULT 0;
 ALTER TABLE order_info ADD COLUMN IF NOT EXISTS commission_rate numeric DEFAULT 0;
 ALTER TABLE order_info ADD COLUMN IF NOT EXISTS commission_amt numeric DEFAULT 0;

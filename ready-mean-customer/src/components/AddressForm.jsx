@@ -14,7 +14,16 @@ export default function AddressForm({ initial, onSubmit, onCancel, loading }) {
   });
   const [errors, setErrors] = useState({});
 
-  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  const set = (field) => (e) => {
+    let val = e.target.value;
+    if (field === 'flat_number') {
+      val = val.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 4);
+    }
+    if (field === 'phone') {
+      val = val.replace(/[^0-9]/g, '').slice(0, 10);
+    }
+    setForm((f) => ({ ...f, [field]: val }));
+  };
 
   const validate = () => {
     const errs = {};
@@ -61,8 +70,10 @@ export default function AddressForm({ initial, onSubmit, onCancel, loading }) {
       <div className="grid grid-cols-2 gap-3">
         <Input
           label="Flat / Villa No."
+          placeholder="e.g. 12B"
           value={form.flat_number}
           onChange={set('flat_number')}
+          maxLength={4}
         />
         <Input
           label="Floor"
@@ -85,9 +96,11 @@ export default function AddressForm({ initial, onSubmit, onCancel, loading }) {
       <Input
         label="Phone *"
         type="tel"
+        inputMode="numeric"
         value={form.phone}
         onChange={set('phone')}
         error={errors.phone}
+        maxLength={10}
       />
       <div className="flex gap-2 pt-2">
         {onCancel && (

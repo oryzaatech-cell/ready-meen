@@ -10,7 +10,7 @@ import OrderStatusBadge from '../../components/OrderStatusBadge';
 import { OrderListSkeleton } from '../../components/ui/Skeleton';
 import formatCurrency from '../../shared/formatCurrency';
 
-const statusFilters = ['all', 'placed', 'accepted', 'processing', 'ready', 'delivered', 'cancelled'];
+const statusFilters = ['all', 'placed', 'cancel_requested', 'processing', 'ready', 'delivered', 'cancelled'];
 
 export default function VendorOrders() {
   const [orders, setOrders] = useState([]);

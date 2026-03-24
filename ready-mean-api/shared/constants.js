@@ -21,6 +21,7 @@ export const STATUS_FLOW = {
 
 export const STATUS_LABELS = {
   placed: 'Order Placed',
+  cancel_requested: 'Cancel Requested',
   processing: 'Processing',
   ready: 'Ready for Pickup/Delivery',
   delivered: 'Delivered',

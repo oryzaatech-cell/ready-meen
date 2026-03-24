@@ -26,6 +26,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        navigateFallbackDenylist: [/^\/firebase-messaging-sw\.js$/],
+        globIgnores: ['**/firebase-messaging-sw.js'],
         runtimeCaching: [
           {
             // Product images — cache for 24 hours

@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useOrderBadge } from '../../context/OrderBadgeContext';
+import NotificationBell from '../NotificationBell';
 
 export default function Navbar() {
   const { signOut, isAuthenticated } = useAuth();
@@ -62,6 +63,7 @@ export default function Navbar() {
           <div className="flex items-center gap-1">
             {isAuthenticated ? (
               <>
+                <NotificationBell />
                 <Link
                   to="/profile"
                   className="p-2 rounded-xl hover:bg-surface-50 active:bg-surface-100 text-surface-400 hover:text-surface-600 transition-all"

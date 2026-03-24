@@ -28,7 +28,11 @@ export function CartProvider({ children }) {
       setItems((prev) => prev.filter((i) => i.cart_key !== cartKey));
     } else {
       setItems((prev) =>
-        prev.map((i) => (i.cart_key === cartKey ? { ...i, qty } : i))
+        prev.map((i) => {
+          if (i.cart_key !== cartKey) return i;
+          const cappedQty = i.stock_qty ? Math.min(qty, i.stock_qty) : qty;
+          return { ...i, qty: cappedQty };
+        })
       );
     }
   }, []);

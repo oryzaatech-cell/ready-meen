@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { OrderBadgeProvider } from './context/OrderBadgeContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
@@ -13,7 +14,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <AuthProvider>
           <OrderBadgeProvider>
-            <App />
+            <NotificationProvider>
+              <App />
+            </NotificationProvider>
           </OrderBadgeProvider>
         </AuthProvider>
       </BrowserRouter>

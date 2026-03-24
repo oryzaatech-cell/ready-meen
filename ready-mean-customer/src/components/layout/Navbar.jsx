@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { LogOut, User, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../context/CartContext';
+import NotificationBell from '../NotificationBell';
 
 export default function Navbar() {
   const { signOut, isAuthenticated } = useAuth();
@@ -35,6 +36,7 @@ export default function Navbar() {
             </Link>
             {isAuthenticated ? (
               <>
+                <NotificationBell />
                 <Link to="/profile" className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                   <User size={20} className="text-gray-600" />
                 </Link>

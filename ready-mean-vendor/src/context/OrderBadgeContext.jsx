@@ -13,7 +13,11 @@ export function OrderBadgeProvider({ children }) {
   const checkNewOrders = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
-      const { orders } = await get('/orders?status=placed&limit=50');
+      const [{ orders: placedOrders }, { orders: cancelOrders }] = await Promise.all([
+        get('/orders?status=placed&limit=50'),
+        get('/orders?status=cancel_requested&limit=50'),
+      ]);
+      const orders = [...(placedOrders || []), ...(cancelOrders || [])];
       if (!orders) return;
       const lastSeen = lastSeenRef.current;
       if (lastSeen) {

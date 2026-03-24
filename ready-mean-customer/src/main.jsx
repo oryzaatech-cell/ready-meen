@@ -5,6 +5,7 @@ import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ActiveOrdersProvider } from './context/ActiveOrdersContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <CartProvider>
             <ActiveOrdersProvider>
-              <App />
+              <NotificationProvider>
+                <App />
+              </NotificationProvider>
             </ActiveOrdersProvider>
           </CartProvider>
         </AuthProvider>

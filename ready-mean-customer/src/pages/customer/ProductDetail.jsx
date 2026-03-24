@@ -78,6 +78,7 @@ export default function ProductDetail() {
       image_url: product.image_url,
       cutting_type: cuttingType,
       cleaning,
+      stock_qty: product.stock_qty,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);

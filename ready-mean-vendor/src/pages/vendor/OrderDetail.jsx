@@ -16,6 +16,7 @@ export default function VendorOrderDetail() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [respondingCancel, setRespondingCancel] = useState(false);
   const { get, put } = useApi();
 
   useEffect(() => { loadOrder(); }, [id]);
@@ -173,6 +174,48 @@ export default function VendorOrderDetail() {
             </div>
           )}
         </Card>
+
+        {/* Cancel request from customer */}
+        {order.status === 'cancel_requested' && (
+          <Card className="p-5 border-orange-200 bg-orange-50/50">
+            <p className="text-sm font-semibold text-orange-700 mb-1">Customer wants to cancel this order</p>
+            <p className="text-xs text-orange-500 mb-4">Approve or reject the cancellation request</p>
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  setRespondingCancel(true);
+                  try {
+                    await put(`/orders/${id}/cancel-respond`, { action: 'reject' });
+                    loadOrder();
+                  } catch (err) { console.error(err); }
+                  finally { setRespondingCancel(false); }
+                }}
+                loading={respondingCancel}
+                className="flex-1"
+                size="lg"
+              >
+                Reject
+              </Button>
+              <Button
+                variant="danger"
+                onClick={async () => {
+                  setRespondingCancel(true);
+                  try {
+                    await put(`/orders/${id}/cancel-respond`, { action: 'approve' });
+                    loadOrder();
+                  } catch (err) { console.error(err); }
+                  finally { setRespondingCancel(false); }
+                }}
+                loading={respondingCancel}
+                className="flex-1"
+                size="lg"
+              >
+                Approve Cancel
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Action */}
         {nextStatus && (

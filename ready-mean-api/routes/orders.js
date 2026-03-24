@@ -37,6 +37,13 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
       }).catch(() => {});
     }
 
+    // Confirm to customer
+    sendNotification(req.user.db_id, {
+      title: 'Order Placed!',
+      body: `Your order #${result.order.id} for ₹${result.order.total_amt} has been placed`,
+      data: { type: 'order_placed', order_id: String(result.order.id) },
+    }).catch(() => {});
+
     res.status(201).json({ order: result.order });
   } catch (err) {
     console.error('Order create error:', err);
@@ -225,12 +232,12 @@ router.put('/:id/status', authenticateUser, requireRole('vendor', 'admin'), asyn
   }
 });
 
-// PUT /api/orders/:id/cancel — Cancel order (customer, only if placed)
+// PUT /api/orders/:id/cancel — Cancel order (customer, only if placed/cancel_requested)
 router.put('/:id/cancel', authenticateUser, async (req, res) => {
   try {
     const { data: order } = await supabase
       .from('order_info')
-      .select('id, user_id, status')
+      .select('id, user_id, vendor_id, status, created_at')
       .eq('id', req.params.id)
       .single();
 
@@ -246,42 +253,188 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Can only cancel orders that are still in "placed" status' });
     }
 
-    // Restore stock for each item
-    const { data: items } = await supabase
-      .from('order_items')
-      .select('product_id, qty')
-      .eq('order_id', order.id);
+    // Within 2 minutes — instant cancel, no vendor approval needed
+    const orderAge = Date.now() - new Date(order.created_at).getTime();
+    const TWO_MINUTES = 2 * 60 * 1000;
 
-    for (const item of (items || [])) {
-      if (!item.product_id) continue;
-      const { data: product } = await supabase
-        .from('product_info')
-        .select('id, stock_qty')
-        .eq('id', item.product_id)
+    if (orderAge <= TWO_MINUTES) {
+      // Restore stock
+      const { data: items } = await supabase
+        .from('order_items')
+        .select('product_id, qty')
+        .eq('order_id', order.id);
+
+      for (const item of (items || [])) {
+        if (!item.product_id) continue;
+        const { data: product } = await supabase
+          .from('product_info')
+          .select('id, stock_qty')
+          .eq('id', item.product_id)
+          .single();
+
+        if (product) {
+          await supabase
+            .from('product_info')
+            .update({ stock_qty: product.stock_qty + item.qty })
+            .eq('id', product.id);
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('order_info')
+        .update({ status: 'cancelled' })
+        .eq('id', req.params.id)
+        .select()
         .single();
 
-      if (product) {
-        await supabase
-          .from('product_info')
-          .update({ stock_qty: product.stock_qty + item.qty })
-          .eq('id', product.id);
+      if (error) {
+        return res.status(500).json({ error: 'Failed to cancel order' });
       }
+
+      // Notify vendor that customer cancelled
+      if (order.vendor_id) {
+        sendNotification(order.vendor_id, {
+          title: 'Order Cancelled',
+          body: `Customer cancelled Order #${order.id}`,
+          data: { type: 'order_cancelled', order_id: String(order.id) },
+        }).catch(() => {});
+      }
+
+      // Confirm cancellation to customer
+      sendNotification(order.user_id, {
+        title: 'Order Cancelled',
+        body: `Your order #${order.id} has been cancelled`,
+        data: { type: 'order_cancelled', order_id: String(order.id) },
+      }).catch(() => {});
+
+      return res.json({ order: data });
     }
 
+    // After 2 minutes — send cancel request to vendor for approval
     const { data, error } = await supabase
       .from('order_info')
-      .update({ status: 'cancelled' })
+      .update({ status: 'cancel_requested' })
       .eq('id', req.params.id)
       .select()
       .single();
 
     if (error) {
-      return res.status(500).json({ error: 'Failed to cancel order' });
+      return res.status(500).json({ error: 'Failed to request cancellation' });
+    }
+
+    // Notify vendor about cancel request
+    if (order.vendor_id) {
+      sendNotification(order.vendor_id, {
+        title: 'Cancel Request',
+        body: `Customer wants to cancel Order #${order.id}`,
+        data: { type: 'cancel_request', order_id: String(order.id) },
+      }).catch(() => {});
+    }
+
+    res.json({ order: data, cancel_requested: true });
+  } catch (err) {
+    console.error('Order cancel error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/orders/:id/cancel-respond — Vendor approve/reject cancel request
+router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin'), async (req, res) => {
+  try {
+    const { action } = req.body; // 'approve' or 'reject'
+
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ error: 'Action must be "approve" or "reject"' });
+    }
+
+    const { data: order } = await supabase
+      .from('order_info')
+      .select('id, user_id, vendor_id, status')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (req.user.role === 'vendor' && order.vendor_id !== req.user.db_id) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    if (order.status !== 'cancel_requested') {
+      return res.status(400).json({ error: 'No pending cancel request for this order' });
+    }
+
+    if (action === 'approve') {
+      // Restore stock
+      const { data: items } = await supabase
+        .from('order_items')
+        .select('product_id, qty')
+        .eq('order_id', order.id);
+
+      for (const item of (items || [])) {
+        if (!item.product_id) continue;
+        const { data: product } = await supabase
+          .from('product_info')
+          .select('id, stock_qty')
+          .eq('id', item.product_id)
+          .single();
+
+        if (product) {
+          await supabase
+            .from('product_info')
+            .update({ stock_qty: product.stock_qty + item.qty })
+            .eq('id', product.id);
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('order_info')
+        .update({ status: 'cancelled' })
+        .eq('id', req.params.id)
+        .select()
+        .single();
+
+      if (error) {
+        return res.status(500).json({ error: 'Failed to cancel order' });
+      }
+
+      // Notify customer
+      if (order.user_id) {
+        sendNotification(order.user_id, {
+          title: 'Order Cancelled',
+          body: `Your cancellation request for Order #${order.id} has been approved`,
+          data: { type: 'cancel_approved', order_id: String(order.id) },
+        }).catch(() => {});
+      }
+
+      return res.json({ order: data });
+    }
+
+    // Reject — restore to placed, mark rejection
+    const { data, error } = await supabase
+      .from('order_info')
+      .update({ status: 'placed', cancel_rejected_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(500).json({ error: 'Failed to reject cancellation' });
+    }
+
+    // Notify customer
+    if (order.user_id) {
+      sendNotification(order.user_id, {
+        title: 'Cancel Request Rejected',
+        body: `Your cancellation request for Order #${order.id} was rejected by the vendor`,
+        data: { type: 'cancel_rejected', order_id: String(order.id) },
+      }).catch(() => {});
     }
 
     res.json({ order: data });
   } catch (err) {
-    console.error('Order cancel error:', err);
+    console.error('Cancel respond error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -84,18 +84,24 @@ export default function Cart() {
                   )}
                 </div>
                 <div className="flex items-center justify-between mt-3">
-                  <span className="text-[15px] font-bold text-primary-700">{formatCurrency(item.price * item.qty)}</span>
+                  <span className={`text-[15px] font-bold ${item.stock_qty <= 0 ? 'text-red-500' : 'text-primary-700'}`}>
+                    {item.stock_qty <= 0 ? 'Sold Out' : formatCurrency(item.price * item.qty)}
+                  </span>
                   <div className="flex items-center bg-gray-50 rounded-lg border border-gray-100">
                     <button
                       onClick={() => updateQty(item.cart_key, item.qty - 0.5)}
-                      className="w-8 h-8 rounded-l-lg flex items-center justify-center text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                      disabled={item.stock_qty <= 0}
+                      className={`w-8 h-8 rounded-l-lg flex items-center justify-center transition-colors ${item.stock_qty <= 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 active:bg-gray-200'}`}
                     >
                       <Minus size={12} />
                     </button>
-                    <span className="text-sm font-bold w-9 text-center text-gray-800">{item.qty}</span>
+                    <span className={`text-sm font-bold w-9 text-center ${item.stock_qty <= 0 ? 'text-red-500' : 'text-gray-800'}`}>
+                      {item.stock_qty <= 0 ? 0 : item.qty}
+                    </span>
                     <button
-                      onClick={() => updateQty(item.cart_key, item.qty + 0.5)}
-                      className="w-8 h-8 rounded-r-lg flex items-center justify-center text-gray-500 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                      onClick={() => updateQty(item.cart_key, Math.min(item.stock_qty || Infinity, item.qty + 0.5))}
+                      disabled={item.stock_qty <= 0 || item.qty >= item.stock_qty}
+                      className={`w-8 h-8 rounded-r-lg flex items-center justify-center transition-colors ${item.stock_qty <= 0 || item.qty >= item.stock_qty ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 active:bg-gray-200'}`}
                     >
                       <Plus size={12} />
                     </button>

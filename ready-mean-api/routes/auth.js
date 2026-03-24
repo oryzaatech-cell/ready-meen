@@ -388,6 +388,30 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// PUT /api/auth/fcm-token — Save FCM token for push notifications
+router.put('/fcm-token', authenticateUser, async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token is required' });
+
+    const table = req.user.role === 'vendor' ? 'vendor_info' : 'user_info';
+    const { error } = await supabase
+      .from(table)
+      .update({ fcm_token: token })
+      .eq('id', req.user.db_id);
+
+    if (error) {
+      console.error('FCM token save error:', error);
+      return res.status(500).json({ error: 'Failed to save token' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('FCM token route error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/auth/me — Get current user profile
 router.get('/me', authenticateUser, async (req, res) => {
   res.json({ user: req.user });

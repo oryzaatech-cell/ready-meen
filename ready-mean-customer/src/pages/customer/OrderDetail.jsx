@@ -9,7 +9,7 @@ import OrderTimeline from '../../components/OrderTimeline';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
 import Spinner from '../../components/ui/Spinner';
 import formatCurrency from '../../shared/formatCurrency';
-import { canCancel } from '../../shared/constants';
+import { canCancel, isCancelPending } from '../../shared/constants';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function CustomerOrderDetail() {
@@ -38,9 +38,9 @@ export default function CustomerOrderDetail() {
   async function handleCancel() {
     setCancelling(true);
     try {
-      await put(`/orders/${id}/cancel`, {});
-      loadOrder();
+      const result = await put(`/orders/${id}/cancel`, {});
       setShowCancelModal(false);
+      loadOrder();
     } catch (err) {
       console.error('Failed to cancel:', err);
     } finally {
@@ -140,6 +140,20 @@ export default function CustomerOrderDetail() {
           );
         })()}
 
+        {order.cancel_rejected_at && order.status === 'placed' && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-center">
+            <p className="text-sm font-semibold text-red-700">Cancel request was rejected</p>
+            <p className="text-xs text-red-500 mt-1">Your order is already being processed by the vendor</p>
+          </div>
+        )}
+
+        {isCancelPending(order.status) && (
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-center">
+            <p className="text-sm font-semibold text-orange-700">Cancellation requested</p>
+            <p className="text-xs text-orange-500 mt-1">Waiting for vendor approval</p>
+          </div>
+        )}
+
         {canCancel(order.status) && (
           <Button variant="danger" onClick={() => setShowCancelModal(true)} className="w-full rounded-xl min-h-[48px]">
             Cancel Order
@@ -150,8 +164,13 @@ export default function CustomerOrderDetail() {
       <Modal isOpen={showCancelModal} onClose={() => setShowCancelModal(false)} title="Cancel Order">
         <div className="space-y-4 pb-2">
           <p className="text-sm text-gray-600">
-            Are you sure you want to cancel this order? This action cannot be undone.
+            Are you sure you want to cancel this order?
           </p>
+          {order.created_at && (Date.now() - new Date(order.created_at).getTime() > 120000) && (
+            <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded-lg">
+              This order was placed more than 2 minutes ago. Your cancellation will need vendor approval.
+            </p>
+          )}
           <div className="flex items-center gap-3">
             <Button variant="secondary" onClick={() => setShowCancelModal(false)} className="flex-1 rounded-xl min-h-[44px]">
               Wait, Keep It
