@@ -17,6 +17,7 @@ export default function VendorOrderDetail() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [respondingCancel, setRespondingCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const { get, put } = useApi();
 
   useEffect(() => { loadOrder(); }, [id]);
@@ -221,6 +222,27 @@ export default function VendorOrderDetail() {
         {nextStatus && (
           <Button onClick={handleAdvanceStatus} loading={updating} className="w-full" size="lg">
             Mark as {STATUS_LABELS[nextStatus]}
+          </Button>
+        )}
+
+        {/* Vendor cancel — only for placed/processing */}
+        {['placed', 'processing'].includes(order.status) && (
+          <Button
+            variant="danger"
+            onClick={async () => {
+              if (!confirm('Cancel this order? The customer will be notified.')) return;
+              setCancelling(true);
+              try {
+                await put(`/orders/${id}/vendor-cancel`, {});
+                loadOrder();
+              } catch (err) { console.error(err); }
+              finally { setCancelling(false); }
+            }}
+            loading={cancelling}
+            className="w-full"
+            size="lg"
+          >
+            Cancel Order
           </Button>
         )}
       </div>

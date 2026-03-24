@@ -232,6 +232,76 @@ router.put('/:id/status', authenticateUser, requireRole('vendor', 'admin'), asyn
   }
 });
 
+// PUT /api/orders/:id/vendor-cancel — Vendor cancels an order
+router.put('/:id/vendor-cancel', authenticateUser, requireRole('vendor', 'admin'), async (req, res) => {
+  try {
+    const { data: order } = await supabase
+      .from('order_info')
+      .select('id, user_id, vendor_id, status')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (req.user.role === 'vendor' && order.vendor_id !== req.user.db_id) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    if (!['placed', 'processing', 'cancel_requested'].includes(order.status)) {
+      return res.status(400).json({ error: 'Can only cancel orders in placed or processing status' });
+    }
+
+    // Restore stock
+    const { data: items } = await supabase
+      .from('order_items')
+      .select('product_id, qty')
+      .eq('order_id', order.id);
+
+    for (const item of (items || [])) {
+      if (!item.product_id) continue;
+      const { data: product } = await supabase
+        .from('product_info')
+        .select('id, stock_qty')
+        .eq('id', item.product_id)
+        .single();
+
+      if (product) {
+        await supabase
+          .from('product_info')
+          .update({ stock_qty: product.stock_qty + item.qty })
+          .eq('id', product.id);
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('order_info')
+      .update({ status: 'cancelled' })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(500).json({ error: 'Failed to cancel order' });
+    }
+
+    // Notify customer
+    if (order.user_id) {
+      sendNotification(order.user_id, {
+        title: 'Order Cancelled by Vendor',
+        body: `Your order #${order.id} has been cancelled by the vendor`,
+        data: { type: 'order_cancelled', order_id: String(order.id) },
+      }).catch(() => {});
+    }
+
+    res.json({ order: data });
+  } catch (err) {
+    console.error('Vendor cancel error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // PUT /api/orders/:id/cancel — Cancel order (customer, only if placed/cancel_requested)
 router.put('/:id/cancel', authenticateUser, async (req, res) => {
   try {
