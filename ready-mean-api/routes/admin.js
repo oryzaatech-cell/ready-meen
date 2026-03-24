@@ -530,8 +530,8 @@ router.get('/analytics/detailed', async (req, res) => {
     for (const item of rangeItems) {
       const pid = item.product_id;
       if (!productQty[pid]) productQty[pid] = { qty_sold: 0, revenue: 0 };
-      productQty[pid].qty_sold += Number(item.quantity) || 1;
-      productQty[pid].revenue += (Number(item.price) || 0) * (Number(item.quantity) || 1);
+      productQty[pid].qty_sold += Number(item.qty) || 1;
+      productQty[pid].revenue += (Number(item.price) || 0) * (Number(item.qty) || 1);
     }
     const top_products = Object.entries(productQty)
       .map(([pid, d]) => ({
@@ -568,8 +568,8 @@ router.get('/analytics/detailed', async (req, res) => {
     for (const item of rangeItems) {
       const cat = productMap[item.product_id]?.category || 'other';
       if (!catRev[cat]) catRev[cat] = { category: cat, revenue: 0, qty_sold: 0 };
-      catRev[cat].qty_sold += Number(item.quantity) || 1;
-      catRev[cat].revenue += (Number(item.price) || 0) * (Number(item.quantity) || 1);
+      catRev[cat].qty_sold += Number(item.qty) || 1;
+      catRev[cat].revenue += (Number(item.price) || 0) * (Number(item.qty) || 1);
     }
     const revenue_by_category = Object.values(catRev).sort((a, b) => b.revenue - a.revenue);
 
