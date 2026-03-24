@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList, ChevronRight, Clock, RefreshCw } from 'lucide-react';
+import { ClipboardList, ChevronRight, Clock } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { useOrderBadge } from '../../context/OrderBadgeContext';
@@ -32,7 +32,7 @@ export default function VendorOrders() {
 
   useEffect(() => { loadOrders(); markSeen(); }, []);
 
-  const { refreshing } = usePullToRefresh(loadOrders);
+  const { PullIndicator } = usePullToRefresh(loadOrders);
 
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
@@ -68,11 +68,7 @@ export default function VendorOrders() {
         })}
       </div>
 
-      {refreshing && (
-        <div className="flex justify-center py-2">
-          <RefreshCw size={16} className="text-primary-500 animate-spin" />
-        </div>
-      )}
+      <PullIndicator />
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">

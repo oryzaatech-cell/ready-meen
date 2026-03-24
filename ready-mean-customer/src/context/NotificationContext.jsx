@@ -15,8 +15,12 @@ export function NotificationProvider({ children }) {
     if (!isAuthenticated) return;
     try {
       const data = await get('/notifications?limit=20');
+      const count = data.unread_count || 0;
       setNotifications(data.notifications || []);
-      setUnreadCount(data.unread_count || 0);
+      setUnreadCount(count);
+      if (navigator.setAppBadge) {
+        count > 0 ? navigator.setAppBadge(count) : navigator.clearAppBadge();
+      }
     } catch (err) {
       // silent
     }
@@ -73,6 +77,7 @@ export function NotificationProvider({ children }) {
       await put('/notifications/read-all', {});
       setUnreadCount(0);
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      if (navigator.clearAppBadge) navigator.clearAppBadge();
     } catch (err) {
       // silent
     }

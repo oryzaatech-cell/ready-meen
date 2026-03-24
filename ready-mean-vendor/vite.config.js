@@ -23,6 +23,11 @@ export default defineConfig({
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
+        shortcuts: [
+          { name: 'Add Product', short_name: 'Add', url: '/add', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
+          { name: 'Orders', short_name: 'Orders', url: '/orders', icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }] },
+        ],
+        categories: ['business', 'food'],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],

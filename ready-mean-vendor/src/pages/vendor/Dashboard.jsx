@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Copy, Share2, Check, Settings, LogOut, ChevronUp, ClipboardList, IndianRupee, Hash, MapPin, Store, RefreshCw } from 'lucide-react';
+import { Copy, Share2, Check, Settings, LogOut, ChevronUp, ClipboardList, IndianRupee, Hash, MapPin, Store } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
@@ -53,7 +53,7 @@ export default function VendorDashboard() {
     }
   }, [user]);
 
-  const { refreshing } = usePullToRefresh(loadData);
+  const { PullIndicator } = usePullToRefresh(loadData);
 
   const { todayOrderCount, todayEarnings } = useMemo(() => {
     const now = new Date();
@@ -143,11 +143,7 @@ export default function VendorDashboard() {
         </button>
       </div>
 
-      {refreshing && (
-        <div className="flex justify-center py-2 -mt-4 mb-2">
-          <RefreshCw size={16} className="text-primary-500 animate-spin" />
-        </div>
-      )}
+      <PullIndicator />
 
       {/* Share Code Card — Hero */}
       {vendorCode && (

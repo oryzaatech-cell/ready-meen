@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Fish, X, Waves, ShoppingBag, RefreshCw } from 'lucide-react';
+import { Search, Fish, X, Waves, ShoppingBag } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../context/CartContext';
@@ -37,7 +37,7 @@ export default function Home() {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const { refreshing } = usePullToRefresh(loadProducts);
+  const { PullIndicator } = usePullToRefresh(loadProducts);
 
   const filtered = search
     ? products.filter((p) => p.name?.toLowerCase().includes(search.toLowerCase()))
@@ -49,6 +49,7 @@ export default function Home() {
 
   return (
     <PageLayout>
+      <PullIndicator />
       <div className="space-y-5">
         {/* Hero banner */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-[#0c5a5a] p-5 pb-6 text-white animate-fade-up">
@@ -105,13 +106,6 @@ export default function Home() {
               {search ? `Results for "${search}"` : 'Available Today'}
             </h2>
             <span className="text-[11px] text-gray-400 font-medium bg-gray-100 px-2.5 py-0.5 rounded-full">{filtered.length}</span>
-          </div>
-        )}
-
-        {/* Pull-to-refresh indicator */}
-        {refreshing && (
-          <div className="flex justify-center py-2">
-            <RefreshCw size={16} className="text-primary-500 animate-spin" />
           </div>
         )}
 

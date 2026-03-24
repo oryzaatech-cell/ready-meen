@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import OfflineBanner from './components/OfflineBanner';
+import UpdateBanner from './components/UpdateBanner';
 import Spinner from './components/ui/Spinner';
 
 const Landing = lazy(() => import('./pages/public/Landing'));
@@ -31,6 +32,7 @@ export default function App() {
 
   return (
     <>
+    <UpdateBanner />
     <OfflineBanner />
     <Suspense fallback={<PageLoader />}>
       <Routes>

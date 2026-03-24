@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Package, Fish, Pencil, Trash2, Ban, RotateCcw, RefreshCw } from 'lucide-react';
+import { PlusCircle, Package, Fish, Pencil, Trash2, Ban, RotateCcw } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
@@ -36,7 +36,7 @@ export default function VendorProducts() {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const { refreshing } = usePullToRefresh(loadProducts);
+  const { PullIndicator } = usePullToRefresh(loadProducts);
 
   async function handleToggleSold(product) {
     setActionLoading(product.id);
@@ -84,11 +84,7 @@ export default function VendorProducts() {
         <p className="text-xs text-surface-400 mb-4">{products.length} product{products.length !== 1 ? 's' : ''} listed</p>
       </div>
 
-      {refreshing && (
-        <div className="flex justify-center py-2">
-          <RefreshCw size={16} className="text-primary-500 animate-spin" />
-        </div>
-      )}
+      <PullIndicator />
 
       {products.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">

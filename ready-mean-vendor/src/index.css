@@ -281,3 +281,29 @@ input, select, textarea {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─── Pull to Refresh ─── */
+.pull-indicator-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  padding-bottom: 8px;
+}
+
+.pull-indicator {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid #06c6b220;
+  border-top-color: #06c6b2;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pull-indicator-spinning {
+  animation: pull-spin 0.6s linear infinite;
+}
+
+@keyframes pull-spin {
+  to { transform: rotate(360deg); }
+}

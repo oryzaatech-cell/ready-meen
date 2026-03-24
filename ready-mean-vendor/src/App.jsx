@@ -4,6 +4,7 @@ import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import Onboarding from './components/Onboarding';
 import OfflineBanner from './components/OfflineBanner';
+import UpdateBanner from './components/UpdateBanner';
 import Spinner from './components/ui/Spinner';
 
 const Login = lazy(() => import('./pages/public/Login'));
@@ -34,6 +35,7 @@ export default function App() {
 
   return (
     <>
+      <UpdateBanner />
       <OfflineBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>

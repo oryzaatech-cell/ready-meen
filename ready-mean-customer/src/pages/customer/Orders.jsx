@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, ChevronRight, Fish, Package, RefreshCw, ChevronLeft } from 'lucide-react';
+import { ClipboardList, ChevronRight, Fish, Package, ChevronLeft } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
@@ -27,7 +27,7 @@ export default function CustomerOrders() {
 
   useEffect(() => { loadOrders(); }, []);
 
-  const { refreshing } = usePullToRefresh(loadOrders);
+  const { PullIndicator } = usePullToRefresh(loadOrders);
 
   if (loading) {
     return <PageLayout><div className="max-w-lg mx-auto space-y-3"><div className="mb-1"><div className="h-6 w-24 bg-gray-200/60 rounded-lg animate-pulse" /><div className="h-3 w-32 bg-gray-200/60 rounded mt-1.5 animate-pulse" /></div><OrderListSkeleton count={3} /></div></PageLayout>;
@@ -35,6 +35,7 @@ export default function CustomerOrders() {
 
   return (
     <PageLayout>
+      <PullIndicator />
       <div className="max-w-lg mx-auto space-y-3 pb-28 md:pb-20">
         {/* Back button */}
         <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors min-h-[44px]">
@@ -48,12 +49,6 @@ export default function CustomerOrders() {
             {orders.length > 0 ? `${orders.length} order${orders.length > 1 ? 's' : ''} placed` : 'Track your orders here'}
           </p>
         </div>
-
-        {refreshing && (
-          <div className="flex justify-center py-2">
-            <RefreshCw size={16} className="text-primary-500 animate-spin" />
-          </div>
-        )}
 
         {orders.length === 0 ? (
           <div className="text-center py-20 animate-fade-up">
