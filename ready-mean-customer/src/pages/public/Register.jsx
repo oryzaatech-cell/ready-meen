@@ -93,7 +93,7 @@ export default function Register() {
         <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input label="Full Name" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
-            <Input label="Mobile Number" type="tel" placeholder="9876543210" value={mobile} onChange={(e) => setMobile(e.target.value)} />
+            <Input label="Mobile Number" type="tel" inputMode="numeric" maxLength={10} placeholder="9876543210" value={mobile} onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))} />
             <Input label="Password" type="password" placeholder="At least 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} />
 
             <div>

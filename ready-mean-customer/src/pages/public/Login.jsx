@@ -85,9 +85,11 @@ export default function Login() {
           <label className="block text-xs font-medium text-gray-500 mb-1.5">Mobile Number</label>
           <input
             type="tel"
+            inputMode="numeric"
+            maxLength={10}
             placeholder="9876543210"
             value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
+            onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 focus:bg-white"
           />
         </div>
