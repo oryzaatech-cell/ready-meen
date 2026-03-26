@@ -1,7 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ImagePlus, X, Check, Scissors, Sparkles, Plus as PlusIcon, ZoomIn, ZoomOut, ArrowLeft, Camera, Image as GalleryIcon, ChevronDown } from 'lucide-react';
-import Cropper from 'react-easy-crop';
+import { ImagePlus, X, Scissors, Sparkles, Plus as PlusIcon, ZoomIn, ZoomOut, Camera, Image as GalleryIcon, ChevronDown } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import PageLayout from '../../components/layout/PageLayout';
@@ -15,37 +14,6 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 const SAVED_CUTS_KEY = 'vendor_saved_cuts';
 const RECENT_PRODUCTS_KEY = 'vendor_recent_products';
 
-// Crop the image using canvas
-async function getCroppedBlob(imageSrc, croppedAreaPixels) {
-  const image = new Image();
-  image.crossOrigin = 'anonymous';
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = reject;
-    image.src = imageSrc;
-  });
-
-  const canvas = document.createElement('canvas');
-  canvas.width = croppedAreaPixels.width;
-  canvas.height = croppedAreaPixels.height;
-  const ctx = canvas.getContext('2d');
-
-  ctx.drawImage(
-    image,
-    croppedAreaPixels.x,
-    croppedAreaPixels.y,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height,
-    0,
-    0,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height,
-  );
-
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.92);
-  });
-}
 
 function getRecentProducts() {
   try {
@@ -96,13 +64,8 @@ export default function AddProduct() {
     : [];
 
   // Image states
-  const [rawImage, setRawImage] = useState(null);
-  const [croppedBlob, setCroppedBlob] = useState(null);
-  const [croppedPreview, setCroppedPreview] = useState(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   // Image source picker
   const [showImagePicker, setShowImagePicker] = useState(false);
@@ -147,29 +110,9 @@ export default function AddProduct() {
 
     setError('');
     setShowImagePicker(false);
-    const url = URL.createObjectURL(file);
-    setRawImage(url);
-    setShowCropper(true);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-  };
-
-  const onCropComplete = useCallback((_, croppedPixels) => {
-    setCroppedAreaPixels(croppedPixels);
-  }, []);
-
-  const handleCropDone = async () => {
-    if (!rawImage || !croppedAreaPixels) return;
-    try {
-      const blob = await getCroppedBlob(rawImage, croppedAreaPixels);
-      setCroppedBlob(blob);
-      if (croppedPreview) URL.revokeObjectURL(croppedPreview);
-      setCroppedPreview(URL.createObjectURL(blob));
-      setShowCropper(false);
-    } catch (err) {
-      console.error('Crop failed:', err);
-      setError('Failed to crop image');
-    }
+    setImageFile(file);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   const openLightbox = () => {
@@ -192,21 +135,18 @@ export default function AddProduct() {
   const handleLightboxPointerUp = () => setDragging(false);
 
   const removeImage = () => {
-    if (rawImage) URL.revokeObjectURL(rawImage);
-    if (croppedPreview) URL.revokeObjectURL(croppedPreview);
-    setRawImage(null);
-    setCroppedBlob(null);
-    setCroppedPreview(null);
-    setShowCropper(false);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImageFile(null);
+    setImagePreview(null);
     if (cameraInputRef.current) cameraInputRef.current.value = '';
     if (galleryInputRef.current) galleryInputRef.current.value = '';
   };
 
   const uploadImage = async () => {
-    if (!croppedBlob) return null;
+    if (!imageFile) return null;
 
     const formData = new FormData();
-    formData.append('image', croppedBlob, 'product.jpg');
+    formData.append('image', imageFile, imageFile.name);
 
     const res = await fetch(`${API_URL}/products/upload-image`, {
       method: 'POST',
@@ -278,7 +218,7 @@ export default function AddProduct() {
     setLoading(true);
     try {
       let image_url = null;
-      if (croppedBlob) {
+      if (imageFile) {
         setUploading(true);
         image_url = await uploadImage();
         setUploading(false);
@@ -455,10 +395,10 @@ export default function AddProduct() {
             </div>
 
             <div>
-              {croppedPreview ? (
+              {imagePreview ? (
                 <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-surface-900 group ring-1 ring-surface-200/60 shadow-card">
                   <img
-                    src={croppedPreview}
+                    src={imagePreview}
                     alt="Preview"
                     className="w-full h-full object-cover cursor-zoom-in transition-all duration-300 group-hover:scale-[1.03] group-hover:brightness-95"
                     onClick={openLightbox}
@@ -469,14 +409,6 @@ export default function AddProduct() {
                   <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-3 pb-3 pt-6">
                     <span className="text-[11px] font-medium text-white/70">Tap to zoom</span>
                     <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowCropper(true)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-semibold hover:bg-white/30 active:bg-white/40 transition-all ring-1 ring-white/10"
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2v4M18 18v4M2 6h4M18 2h4v4M2 18v4h4M22 18v4h-4M6 6h12v12H6z"/></svg>
-                        Crop
-                      </button>
                       <button
                         type="button"
                         onClick={() => { setShowImagePicker(true); }}
@@ -813,7 +745,7 @@ export default function AddProduct() {
       `}</style>
 
       {/* Image Lightbox */}
-      {showLightbox && croppedPreview && (
+      {showLightbox && imagePreview && (
         <div
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
           onClick={(e) => { if (e.target === e.currentTarget) setShowLightbox(false); }}
@@ -838,7 +770,7 @@ export default function AddProduct() {
             style={{ touchAction: 'none' }}
           >
             <img
-              src={croppedPreview}
+              src={imagePreview}
               alt="Product zoom"
               className="max-w-[90vw] max-h-[80vh] rounded-2xl shadow-2xl transition-transform duration-200 ease-out"
               style={{
@@ -871,58 +803,6 @@ export default function AddProduct() {
         </div>
       )}
 
-      {/* Crop Modal */}
-      {showCropper && rawImage && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col">
-          {/* Top bar with Cancel / Done — always visible */}
-          <div className="flex items-center justify-between px-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 bg-black/80 backdrop-blur-sm">
-            <button
-              type="button"
-              onClick={() => { setShowCropper(false); if (!croppedBlob) removeImage(); }}
-              className="px-4 py-2 rounded-lg text-white text-sm font-semibold active:bg-surface-800 transition-colors"
-            >
-              Cancel
-            </button>
-            <span className="text-white/60 text-xs font-medium">Crop Photo</span>
-            <button
-              type="button"
-              onClick={handleCropDone}
-              className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-semibold flex items-center gap-1.5 active:bg-primary-700 transition-colors"
-            >
-              <Check size={16} />
-              Done
-            </button>
-          </div>
-          {/* Cropper area */}
-          <div className="relative flex-1">
-            <Cropper
-              image={rawImage}
-              crop={crop}
-              zoom={zoom}
-              aspect={4 / 3}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-            />
-          </div>
-          {/* Zoom slider at bottom */}
-          <div className="bg-black/80 backdrop-blur-sm px-6 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
-            <div className="flex items-center gap-3">
-              <span className="text-white/60 text-xs">−</span>
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.1}
-                value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
-                className="flex-1 accent-primary-500"
-              />
-              <span className="text-white/60 text-xs">+</span>
-            </div>
-          </div>
-        </div>
-      )}
     </PageLayout>
   );
 }
