@@ -83,9 +83,33 @@ export async function sendNotification(userId, { title, body, data = {} }) {
 
     await firebaseAdmin.messaging().send({
       token: fcmToken,
+      notification: { title, body },
       data: { ...data, title, body },
+      webpush: {
+        notification: {
+          title,
+          body,
+          icon: '/icons/icon-192.png',
+          badge: '/icons/icon-192.png',
+          data: { ...data, title, body },
+        },
+        fcmOptions: { link: data.order_id ? `/orders/${data.order_id}` : '/orders' },
+      },
+      android: {
+        priority: 'high',
+        notification: { title, body, icon: '/icons/icon-192.png' },
+      },
+      apns: {
+        payload: { aps: { alert: { title, body }, sound: 'default', badge: 1 } },
+      },
     });
   } catch (err) {
     console.warn('Push notification failed:', err.message);
+    // Clear stale token if it's no longer valid
+    if (err.code === 'messaging/registration-token-not-registered' ||
+        err.code === 'messaging/invalid-registration-token') {
+      await supabase.from('user_info').update({ fcm_token: null }).eq('id', userId);
+      await supabase.from('vendor_info').update({ fcm_token: null }).eq('id', userId);
+    }
   }
 }

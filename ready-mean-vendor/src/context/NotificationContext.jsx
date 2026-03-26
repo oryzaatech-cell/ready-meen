@@ -26,7 +26,7 @@ export function NotificationProvider({ children }) {
     }
   }, [isAuthenticated, get]);
 
-  // Register FCM token after login
+  // Register FCM token after login and refresh on window focus (tokens can rotate)
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -42,14 +42,29 @@ export function NotificationProvider({ children }) {
     }
 
     registerFCM();
+
+    // Re-register on focus to catch token rotations
+    const onFocus = () => registerFCM();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [isAuthenticated, put]);
 
-  // Listen for foreground push messages
+  // Listen for foreground push messages — show in-app toast since browser won't show push
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const unsubscribe = onForegroundMessage(() => {
+    const unsubscribe = onForegroundMessage((payload) => {
       fetchNotifications();
+      // Show a native notification even when the app is in the foreground
+      const title = payload.notification?.title || payload.data?.title;
+      const body = payload.notification?.body || payload.data?.body;
+      if (title && Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: '/icons/icon-192.png',
+          badge: '/icons/icon-192.png',
+        });
+      }
     });
 
     return unsubscribe;

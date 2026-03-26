@@ -14,8 +14,12 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.data?.title || payload.notification?.title;
-  const body = payload.data?.body || payload.notification?.body;
+  // If a notification payload is present, the browser shows it automatically.
+  // Only manually show when we have data-only messages.
+  if (payload.notification) return;
+
+  const title = payload.data?.title;
+  const body = payload.data?.body;
   if (!title) return;
 
   const options = {

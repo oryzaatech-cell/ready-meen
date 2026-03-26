@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, ShoppingBag, Truck, XCircle, CheckCircle, X } from 'lucide-react';
+import { Bell, ShoppingBag, Truck, XCircle, CheckCircle, X, Fish } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -26,6 +26,8 @@ function getNotifIcon(type) {
       return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' };
     case 'cancel_approved':
       return { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' };
+    case 'new_product':
+      return { icon: Fish, color: 'text-emerald-600', bg: 'bg-emerald-50' };
     default:
       return { icon: Bell, color: 'text-gray-500', bg: 'bg-gray-50' };
   }
@@ -55,7 +57,11 @@ export default function NotificationBell() {
 
   const handleNotifClick = (notif) => {
     setOpen(false);
-    if (notif.order_id) navigate(`/orders/${notif.order_id}`);
+    if (notif.order_id) {
+      navigate(`/orders/${notif.order_id}`);
+    } else if (notif.type === 'new_product') {
+      navigate('/');
+    }
   };
 
   return (

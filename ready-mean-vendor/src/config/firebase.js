@@ -48,7 +48,19 @@ export async function requestNotificationPermission() {
       return null;
     }
 
-    const token = await getToken(msg, { vapidKey });
+    // Register the Firebase messaging service worker explicitly
+    // so getToken can bind to it on both Android and iOS PWA
+    const tokenOptions = { vapidKey };
+    if ('serviceWorker' in navigator) {
+      try {
+        const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        tokenOptions.serviceWorkerRegistration = swReg;
+      } catch (swErr) {
+        console.warn('Firebase SW registration failed:', swErr.message);
+      }
+    }
+
+    const token = await getToken(msg, tokenOptions);
     return token;
   } catch (err) {
     console.warn('FCM token error:', err.message);
