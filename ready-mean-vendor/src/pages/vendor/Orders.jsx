@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList, ChevronRight, Clock } from 'lucide-react';
+import { ClipboardList, ChevronRight, Clock, MapPin, Phone } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { useOrderBadge } from '../../context/OrderBadgeContext';
@@ -86,9 +86,6 @@ export default function VendorOrders() {
                 <div className="flex items-start justify-between">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm text-surface-900 truncate">{order.user?.name || `Order #${order.id}`}</p>
-                    {order.shipping_address && (
-                      <p className="text-xs text-surface-400 mt-0.5 line-clamp-1">{order.shipping_address}</p>
-                    )}
                     <p className="text-xs text-surface-400 mt-0.5">
                       {order.order_items?.length || 0} item{(order.order_items?.length || 0) !== 1 ? 's' : ''}
                     </p>
@@ -98,7 +95,29 @@ export default function VendorOrders() {
                     <ChevronRight size={16} className="text-surface-300 mt-0.5 group-hover:text-primary-500 group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-surface-100/80">
+                {order.shipping_address && (() => {
+                  const lines = order.shipping_address.split('\n');
+                  const mobileLine = lines[0]?.startsWith('Mobile:') ? lines[0] : null;
+                  const addressLines = mobileLine ? lines.slice(1) : lines;
+                  const addressText = addressLines.filter(Boolean).join(', ');
+                  return (
+                    <div className="mt-2.5 pt-2.5 border-t border-surface-100/80 space-y-1.5">
+                      {addressText && (
+                        <div className="flex items-start gap-2">
+                          <MapPin size={13} className="text-primary-400 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-surface-600 line-clamp-2">{addressText}</p>
+                        </div>
+                      )}
+                      {mobileLine && (
+                        <div className="flex items-center gap-2">
+                          <Phone size={12} className="text-primary-400 flex-shrink-0" />
+                          <p className="text-xs text-surface-600 font-medium">{mobileLine.replace('Mobile:', '').trim()}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+                <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-surface-100/80">
                   <span className="font-bold text-sm text-surface-900">{formatCurrency(order.total_amt)}</span>
                   <span className="flex items-center gap-1 text-xs text-surface-400">
                     <Clock size={11} />

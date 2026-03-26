@@ -5,6 +5,7 @@ import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import LogoutConfirm from '../../components/ui/LogoutConfirm';
 
 export default function VendorProfile() {
   const { user, signOut, saveProfile } = useAuth();
@@ -12,6 +13,7 @@ export default function VendorProfile() {
   const [shopName, setShopName] = useState(user?.shop_name || '');
   const [location, setLocation] = useState(user?.location || '');
   const [saving, setSaving] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -98,10 +100,12 @@ export default function VendorProfile() {
         </Card>
 
         {/* Sign Out */}
-        <Button variant="ghost" onClick={signOut} className="w-full text-red-500 hover:bg-red-50 hover:text-red-600">
+        <Button variant="ghost" onClick={() => setShowLogout(true)} className="w-full text-red-500 hover:bg-red-50 hover:text-red-600">
           <LogOut size={16} className="mr-2" /> Sign Out
         </Button>
       </div>
+
+      <LogoutConfirm isOpen={showLogout} onCancel={() => setShowLogout(false)} onConfirm={signOut} />
     </PageLayout>
   );
 }

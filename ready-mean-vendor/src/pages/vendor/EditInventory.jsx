@@ -570,6 +570,26 @@ export default function EditProduct() {
       {/* Crop Modal */}
       {showCropper && rawImage && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col">
+          {/* Top bar with Cancel / Done — always visible */}
+          <div className="flex items-center justify-between px-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 bg-black/80 backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={() => { setShowCropper(false); if (!croppedBlob) removeImage(); }}
+              className="px-4 py-2 rounded-lg text-white text-sm font-semibold active:bg-surface-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <span className="text-white/60 text-xs font-medium">Crop Photo</span>
+            <button
+              type="button"
+              onClick={handleCropDone}
+              className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-semibold flex items-center gap-1.5 active:bg-primary-700 transition-colors"
+            >
+              <Check size={16} />
+              Done
+            </button>
+          </div>
+          {/* Cropper area */}
           <div className="relative flex-1">
             <Cropper
               image={rawImage}
@@ -581,9 +601,10 @@ export default function EditProduct() {
               onCropComplete={onCropComplete}
             />
           </div>
-          <div className="bg-black p-4 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+          {/* Zoom slider at bottom */}
+          <div className="bg-black/80 backdrop-blur-sm px-6 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
             <div className="flex items-center gap-3">
-              <span className="text-white text-xs w-12">Zoom</span>
+              <span className="text-white/60 text-xs">−</span>
               <input
                 type="range"
                 min={1}
@@ -593,23 +614,7 @@ export default function EditProduct() {
                 onChange={(e) => setZoom(Number(e.target.value))}
                 className="flex-1 accent-primary-500"
               />
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => { setShowCropper(false); if (!croppedBlob) removeImage(); }}
-                className="flex-1 py-3 rounded-xl bg-surface-700 text-white text-sm font-semibold active:bg-surface-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleCropDone}
-                className="flex-1 py-3 rounded-xl bg-primary-600 text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:bg-primary-700 transition-colors"
-              >
-                <Check size={18} />
-                Done
-              </button>
+              <span className="text-white/60 text-xs">+</span>
             </div>
           </div>
         </div>

@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useOrderBadge } from '../../context/OrderBadgeContext';
 import NotificationBell from '../NotificationBell';
+import LogoutConfirm from '../ui/LogoutConfirm';
 
 export default function Navbar() {
   const { signOut, isAuthenticated } = useAuth();
+  const [showLogout, setShowLogout] = useState(false);
   const location = useLocation();
   const { newCount } = useOrderBadge();
 
@@ -72,7 +75,7 @@ export default function Navbar() {
                   <Settings size={18} strokeWidth={1.8} />
                 </Link>
                 <button
-                  onClick={signOut}
+                  onClick={() => setShowLogout(true)}
                   className="p-2 rounded-xl hover:bg-red-50 active:bg-red-100 text-surface-400 hover:text-red-500 transition-all"
                   title="Sign out"
                 >
@@ -87,6 +90,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+      <LogoutConfirm isOpen={showLogout} onCancel={() => setShowLogout(false)} onConfirm={signOut} />
     </nav>
   );
 }

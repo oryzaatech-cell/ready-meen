@@ -10,6 +10,7 @@ import Input from '../../components/ui/Input';
 import { DashboardSkeleton } from '../../components/ui/Skeleton';
 import formatCurrency from '../../shared/formatCurrency';
 import InstallBanner from '../../components/InstallBanner';
+import LogoutConfirm from '../../components/ui/LogoutConfirm';
 
 export default function VendorDashboard() {
   const [orders, setOrders] = useState([]);
@@ -19,6 +20,7 @@ export default function VendorDashboard() {
   const [profileForm, setProfileForm] = useState({ name: '', shop_name: '', location: '' });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
+  const [showLogout, setShowLogout] = useState(false);
 
   const { get } = useApi();
   const { user, signOut, saveProfile } = useAuth();
@@ -272,7 +274,7 @@ export default function VendorDashboard() {
               <div className="mt-4 space-y-2.5">
                 <Button onClick={handleSaveProfile} loading={saving} className="w-full">Save Profile</Button>
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => setShowLogout(true)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors active:scale-[0.98]"
                 >
                   <LogOut size={15} /> Sign Out
@@ -285,6 +287,8 @@ export default function VendorDashboard() {
 
       {/* PWA Install Banner */}
       <InstallBanner />
+
+      <LogoutConfirm isOpen={showLogout} onCancel={() => setShowLogout(false)} onConfirm={signOut} />
     </PageLayout>
   );
 }

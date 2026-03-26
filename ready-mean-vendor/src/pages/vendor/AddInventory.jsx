@@ -322,7 +322,7 @@ export default function AddProduct() {
       setTimeout(() => {
         setShowSuccess(false);
         resetForm();
-      }, 1600);
+      }, 2800);
     } catch (err) {
       setUploading(false);
       setError(err.message || 'Failed to add product');
@@ -755,14 +755,14 @@ export default function AddProduct() {
 
       {/* Success Toast / Overlay */}
       {showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-3 animate-success-pop">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center animate-success-check">
-              <svg className="w-9 h-9 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/20 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl px-10 py-10 flex flex-col items-center gap-4 animate-success-pop w-full max-w-xs">
+            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center animate-success-check">
+              <svg className="w-11 h-11 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" className="animate-draw-check" />
               </svg>
             </div>
-            <p className="text-lg font-bold text-surface-900">Product added! {'\u2713'}</p>
+            <p className="text-xl font-bold text-surface-900">Product added!</p>
             <p className="text-sm text-surface-500">Your product is now live</p>
           </div>
         </div>
@@ -874,6 +874,26 @@ export default function AddProduct() {
       {/* Crop Modal */}
       {showCropper && rawImage && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col">
+          {/* Top bar with Cancel / Done — always visible */}
+          <div className="flex items-center justify-between px-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 bg-black/80 backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={() => { setShowCropper(false); if (!croppedBlob) removeImage(); }}
+              className="px-4 py-2 rounded-lg text-white text-sm font-semibold active:bg-surface-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <span className="text-white/60 text-xs font-medium">Crop Photo</span>
+            <button
+              type="button"
+              onClick={handleCropDone}
+              className="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-semibold flex items-center gap-1.5 active:bg-primary-700 transition-colors"
+            >
+              <Check size={16} />
+              Done
+            </button>
+          </div>
+          {/* Cropper area */}
           <div className="relative flex-1">
             <Cropper
               image={rawImage}
@@ -885,9 +905,10 @@ export default function AddProduct() {
               onCropComplete={onCropComplete}
             />
           </div>
-          <div className="bg-black p-4 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+          {/* Zoom slider at bottom */}
+          <div className="bg-black/80 backdrop-blur-sm px-6 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
             <div className="flex items-center gap-3">
-              <span className="text-white text-xs w-12">Zoom</span>
+              <span className="text-white/60 text-xs">−</span>
               <input
                 type="range"
                 min={1}
@@ -897,23 +918,7 @@ export default function AddProduct() {
                 onChange={(e) => setZoom(Number(e.target.value))}
                 className="flex-1 accent-primary-500"
               />
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => { setShowCropper(false); if (!croppedBlob) removeImage(); }}
-                className="flex-1 py-3 rounded-xl bg-surface-700 text-white text-sm font-semibold active:bg-surface-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleCropDone}
-                className="flex-1 py-3 rounded-xl bg-primary-600 text-white text-sm font-semibold flex items-center justify-center gap-1.5 active:bg-primary-700 transition-colors"
-              >
-                <Check size={18} />
-                Done
-              </button>
+              <span className="text-white/60 text-xs">+</span>
             </div>
           </div>
         </div>

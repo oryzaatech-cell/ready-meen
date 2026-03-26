@@ -15,9 +15,12 @@ export function CartProvider({ children }) {
     setItems((prev) => {
       const existing = prev.find((i) => i.cart_key === key);
       if (existing) {
-        return prev.map((i) =>
-          i.cart_key === key ? { ...i, qty: i.qty + item.qty } : i
-        );
+        return prev.map((i) => {
+          if (i.cart_key !== key) return i;
+          const newQty = i.qty + item.qty;
+          const cappedQty = i.stock_qty ? Math.min(newQty, i.stock_qty) : newQty;
+          return { ...i, qty: cappedQty };
+        });
       }
       return [...prev, { ...item, cart_key: key }];
     });
