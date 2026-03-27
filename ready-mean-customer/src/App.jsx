@@ -16,6 +16,7 @@ const Cart = lazy(() => import('./pages/customer/Cart'));
 const Checkout = lazy(() => import('./pages/customer/Checkout'));
 const Orders = lazy(() => import('./pages/customer/Orders'));
 const OrderDetail = lazy(() => import('./pages/customer/OrderDetail'));
+const Notifications = lazy(() => import('./pages/customer/Notifications'));
 const Profile = lazy(() => import('./pages/customer/Profile'));
 
 function PageLoader() {
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
         <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

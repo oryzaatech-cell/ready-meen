@@ -20,6 +20,7 @@ export default function CustomerProfile() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const [addresses, setAddresses] = useState([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -139,12 +140,31 @@ export default function CustomerProfile() {
 
         {/* Sign out */}
         <button
-          onClick={signOut}
+          onClick={() => setShowSignOutConfirm(true)}
           className="w-full flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:bg-red-50 hover:border-red-100 transition-all duration-200 group"
         >
           <LogOut size={16} className="text-gray-400 group-hover:text-red-500 transition-colors" />
           <span className="text-sm font-medium text-gray-600 group-hover:text-red-600 transition-colors">Sign Out</span>
         </button>
+
+        {/* Sign Out Confirmation Modal */}
+        <Modal isOpen={showSignOutConfirm} onClose={() => setShowSignOutConfirm(false)} title="Sign Out">
+          <p className="text-sm text-gray-600 mb-6">Are you sure you want to sign out?</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowSignOutConfirm(false)}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={signOut}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </Modal>
       </div>
 
       <Modal isOpen={showAddressModal} onClose={() => setShowAddressModal(false)} title="Add Address">

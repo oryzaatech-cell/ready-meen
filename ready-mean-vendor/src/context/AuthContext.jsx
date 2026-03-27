@@ -130,6 +130,17 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
+    // Clear FCM token so this device stops receiving push for this user
+    if (session?.access_token) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/fcm-token`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+      } catch (err) {
+        // non-blocking
+      }
+    }
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);

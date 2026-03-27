@@ -412,6 +412,22 @@ router.put('/fcm-token', authenticateUser, async (req, res) => {
   }
 });
 
+// DELETE /api/auth/fcm-token — Clear FCM token on logout
+router.delete('/fcm-token', authenticateUser, async (req, res) => {
+  try {
+    const table = req.user.role === 'vendor' ? 'vendor_info' : 'user_info';
+    await supabase
+      .from(table)
+      .update({ fcm_token: null })
+      .eq('id', req.user.db_id);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('FCM token clear error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/auth/me — Get current user profile
 router.get('/me', authenticateUser, async (req, res) => {
   res.json({ user: req.user });

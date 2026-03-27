@@ -26,7 +26,7 @@ export function NotificationProvider({ children }) {
     }
   }, [isAuthenticated, get]);
 
-  // Register FCM token after login and refresh on window focus (tokens can rotate)
+  // Register FCM token after login
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -42,11 +42,6 @@ export function NotificationProvider({ children }) {
     }
 
     registerFCM();
-
-    // Re-register on focus to catch token rotations
-    const onFocus = () => registerFCM();
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
   }, [isAuthenticated, put]);
 
   // Listen for foreground push messages — show in-app toast since browser won't show push
@@ -70,20 +65,17 @@ export function NotificationProvider({ children }) {
     return unsubscribe;
   }, [isAuthenticated, fetchNotifications]);
 
-  // Poll every 20 seconds (vendor needs faster updates)
+  // Poll every 20 seconds (vendor needs faster updates) + refresh on window focus (single listener)
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 20000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, fetchNotifications]);
-
-  // Also check on window focus
-  useEffect(() => {
-    if (!isAuthenticated) return;
     const onFocus = () => fetchNotifications();
     window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [isAuthenticated, fetchNotifications]);
 
   const markAllRead = useCallback(async () => {
