@@ -5,7 +5,6 @@ export default function UpdateBanner() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Listen for new service worker taking control
     const onControllerChange = () => setShow(true);
     navigator.serviceWorker?.addEventListener('controllerchange', onControllerChange);
     return () => {
@@ -16,17 +15,19 @@ export default function UpdateBanner() {
   if (!show) return null;
 
   return (
-    <div
-      className="fixed top-0 left-0 right-0 z-[70] bg-sky-600 text-white text-center py-1.5 px-4 flex items-center justify-center gap-2 text-xs font-semibold animate-slide-down"
-      style={{ paddingTop: 'calc(0.375rem + env(safe-area-inset-top, 0px))' }}
-    >
-      <RefreshCw size={13} />
-      New version available
+    <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mb-5">
+        <RefreshCw size={28} className="text-primary-600" />
+      </div>
+      <h2 className="text-lg font-bold text-gray-900 mb-2">Update Available</h2>
+      <p className="text-sm text-gray-500 mb-6 max-w-xs">
+        A new version of Ready Meen is available. Please update to continue using the app.
+      </p>
       <button
         onClick={() => window.location.reload()}
-        className="ml-2 bg-white text-sky-700 px-2.5 py-0.5 rounded-full text-xs font-bold hover:bg-sky-50 transition-colors"
+        className="px-8 py-3 bg-primary-600 text-white rounded-2xl text-sm font-semibold hover:bg-primary-700 transition-colors shadow-lg shadow-primary-600/25"
       >
-        Update
+        Update Now
       </button>
     </div>
   );
