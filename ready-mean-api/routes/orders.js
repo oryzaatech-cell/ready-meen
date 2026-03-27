@@ -253,7 +253,20 @@ router.put('/:id/vendor-cancel', authenticateUser, requireRole('vendor', 'admin'
       return res.status(400).json({ error: 'Can only cancel orders in placed or processing status' });
     }
 
-    // Restore stock
+    // Atomically set status to cancelled — only if status hasn't changed
+    const { data, error } = await supabase
+      .from('order_info')
+      .update({ status: 'cancelled' })
+      .eq('id', req.params.id)
+      .eq('status', order.status)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return res.status(409).json({ error: 'Order status has changed. Please refresh and try again.' });
+    }
+
+    // Restore stock (safe — status is already cancelled so no double-restore)
     const { data: items } = await supabase
       .from('order_items')
       .select('product_id, qty')
@@ -273,17 +286,6 @@ router.put('/:id/vendor-cancel', authenticateUser, requireRole('vendor', 'admin'
           .update({ stock_qty: product.stock_qty + item.qty })
           .eq('id', product.id);
       }
-    }
-
-    const { data, error } = await supabase
-      .from('order_info')
-      .update({ status: 'cancelled' })
-      .eq('id', req.params.id)
-      .select()
-      .single();
-
-    if (error) {
-      return res.status(500).json({ error: 'Failed to cancel order' });
     }
 
     // Notify customer
@@ -328,7 +330,20 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
     const TWO_MINUTES = 2 * 60 * 1000;
 
     if (orderAge <= TWO_MINUTES) {
-      // Restore stock
+      // Atomically set status to cancelled — only if still placed
+      const { data, error } = await supabase
+        .from('order_info')
+        .update({ status: 'cancelled' })
+        .eq('id', req.params.id)
+        .eq('status', 'placed')
+        .select()
+        .single();
+
+      if (error || !data) {
+        return res.status(409).json({ error: 'Order status has changed. Please refresh and try again.' });
+      }
+
+      // Restore stock (safe — status is already cancelled)
       const { data: items } = await supabase
         .from('order_items')
         .select('product_id, qty')
@@ -350,17 +365,6 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
         }
       }
 
-      const { data, error } = await supabase
-        .from('order_info')
-        .update({ status: 'cancelled' })
-        .eq('id', req.params.id)
-        .select()
-        .single();
-
-      if (error) {
-        return res.status(500).json({ error: 'Failed to cancel order' });
-      }
-
       // Notify vendor that customer cancelled
       if (order.vendor_id) {
         sendNotification(order.vendor_id, {
@@ -380,16 +384,17 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
       return res.json({ order: data });
     }
 
-    // After 2 minutes — send cancel request to vendor for approval
+    // After 2 minutes — send cancel request to vendor for approval (atomic)
     const { data, error } = await supabase
       .from('order_info')
       .update({ status: 'cancel_requested' })
       .eq('id', req.params.id)
+      .eq('status', 'placed')
       .select()
       .single();
 
-    if (error) {
-      return res.status(500).json({ error: 'Failed to request cancellation' });
+    if (error || !data) {
+      return res.status(409).json({ error: 'Order status has changed. Please refresh and try again.' });
     }
 
     // Notify vendor about cancel request
@@ -436,7 +441,20 @@ router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin
     }
 
     if (action === 'approve') {
-      // Restore stock
+      // Atomically set status to cancelled — only if still cancel_requested
+      const { data, error } = await supabase
+        .from('order_info')
+        .update({ status: 'cancelled' })
+        .eq('id', req.params.id)
+        .eq('status', 'cancel_requested')
+        .select()
+        .single();
+
+      if (error || !data) {
+        return res.status(409).json({ error: 'Order status has changed. Please refresh and try again.' });
+      }
+
+      // Restore stock (safe — status is already cancelled)
       const { data: items } = await supabase
         .from('order_items')
         .select('product_id, qty')
@@ -458,17 +476,6 @@ router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin
         }
       }
 
-      const { data, error } = await supabase
-        .from('order_info')
-        .update({ status: 'cancelled' })
-        .eq('id', req.params.id)
-        .select()
-        .single();
-
-      if (error) {
-        return res.status(500).json({ error: 'Failed to cancel order' });
-      }
-
       // Notify customer
       if (order.user_id) {
         sendNotification(order.user_id, {
@@ -481,16 +488,17 @@ router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin
       return res.json({ order: data });
     }
 
-    // Reject — restore to placed, mark rejection
+    // Reject — restore to placed, mark rejection (atomic — only if still cancel_requested)
     const { data, error } = await supabase
       .from('order_info')
       .update({ status: 'placed', cancel_rejected_at: new Date().toISOString() })
       .eq('id', req.params.id)
+      .eq('status', 'cancel_requested')
       .select()
       .single();
 
-    if (error) {
-      return res.status(500).json({ error: 'Failed to reject cancellation' });
+    if (error || !data) {
+      return res.status(409).json({ error: 'Order status has changed. Please refresh and try again.' });
     }
 
     // Notify customer

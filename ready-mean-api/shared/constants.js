@@ -15,6 +15,7 @@ export const CUTTING_TYPES = [
 
 export const STATUS_FLOW = {
   placed: 'processing',
+  cancel_requested: 'processing',
   processing: 'ready',
   ready: 'delivered',
 };

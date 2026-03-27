@@ -42,7 +42,8 @@ export default function Notifications() {
 
   useEffect(() => {
     if (unreadCount > 0) markAllRead();
-  }, [unreadCount, markAllRead]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleNotifClick = (notif) => {
     if (notif.order_id) {

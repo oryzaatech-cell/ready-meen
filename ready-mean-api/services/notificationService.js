@@ -60,6 +60,7 @@ export async function sendNotification(userId, { title, body, data = {} }) {
   try {
     // Check both user_info and vendor_info for the FCM token
     let fcmToken = null;
+    let tokenTable = null;
 
     const { data: user } = await supabase
       .from('user_info')
@@ -68,6 +69,7 @@ export async function sendNotification(userId, { title, body, data = {} }) {
       .maybeSingle();
 
     fcmToken = user?.fcm_token;
+    if (fcmToken) tokenTable = 'user_info';
 
     if (!fcmToken) {
       const { data: vendor } = await supabase
@@ -77,6 +79,7 @@ export async function sendNotification(userId, { title, body, data = {} }) {
         .maybeSingle();
 
       fcmToken = vendor?.fcm_token;
+      if (fcmToken) tokenTable = 'vendor_info';
     }
 
     if (!fcmToken) return;
@@ -105,11 +108,12 @@ export async function sendNotification(userId, { title, body, data = {} }) {
     });
   } catch (err) {
     console.warn('Push notification failed:', err.message);
-    // Clear stale token if it's no longer valid
+    // Clear stale token only from the table it was found in
     if (err.code === 'messaging/registration-token-not-registered' ||
         err.code === 'messaging/invalid-registration-token') {
-      await supabase.from('user_info').update({ fcm_token: null }).eq('id', userId);
-      await supabase.from('vendor_info').update({ fcm_token: null }).eq('id', userId);
+      if (tokenTable) {
+        await supabase.from(tokenTable).update({ fcm_token: null }).eq('id', userId);
+      }
     }
   }
 }
