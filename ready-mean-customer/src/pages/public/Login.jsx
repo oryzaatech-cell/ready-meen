@@ -16,14 +16,16 @@ export default function Login() {
 
   useEffect(() => {
     const savedMobile = localStorage.getItem('readymeen_remembered_mobile');
-    const savedPassword = localStorage.getItem('readymeen_remembered_pw');
     if (savedMobile) {
       setMobile(savedMobile);
       setRememberMe(true);
+      const savedPw = localStorage.getItem(`readymeen_pw_${savedMobile}`);
+      if (savedPw) {
+        try { setPassword(atob(savedPw)); } catch (_) {}
+      }
     }
-    if (savedPassword) {
-      setPassword(atob(savedPassword));
-    }
+    // Clean up old non-user-specific password
+    localStorage.removeItem('readymeen_remembered_pw');
   }, []);
 
   const handleSubmit = async (e) => {
@@ -41,10 +43,10 @@ export default function Login() {
 
     if (rememberMe) {
       localStorage.setItem('readymeen_remembered_mobile', mobile.trim());
-      localStorage.setItem('readymeen_remembered_pw', btoa(password));
+      localStorage.setItem(`readymeen_pw_${mobile.trim()}`, btoa(password));
     } else {
       localStorage.removeItem('readymeen_remembered_mobile');
-      localStorage.removeItem('readymeen_remembered_pw');
+      localStorage.removeItem(`readymeen_pw_${mobile.trim()}`);
     }
 
     setLoading(true);

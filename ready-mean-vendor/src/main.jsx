@@ -5,6 +5,7 @@ import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { OrderBadgeProvider } from './context/OrderBadgeContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { RealtimeProvider } from './context/RealtimeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
@@ -13,11 +14,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <OrderBadgeProvider>
-            <NotificationProvider>
-              <App />
-            </NotificationProvider>
-          </OrderBadgeProvider>
+          <RealtimeProvider>
+            <OrderBadgeProvider>
+              <NotificationProvider>
+                <App />
+              </NotificationProvider>
+            </OrderBadgeProvider>
+          </RealtimeProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

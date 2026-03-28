@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ActiveOrdersProvider } from './context/ActiveOrdersContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { RealtimeProvider } from './context/RealtimeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
@@ -14,13 +15,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <CartProvider>
-            <ActiveOrdersProvider>
-              <NotificationProvider>
-                <App />
-              </NotificationProvider>
-            </ActiveOrdersProvider>
-          </CartProvider>
+          <RealtimeProvider>
+            <CartProvider>
+              <ActiveOrdersProvider>
+                <NotificationProvider>
+                  <App />
+                </NotificationProvider>
+              </ActiveOrdersProvider>
+            </CartProvider>
+          </RealtimeProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

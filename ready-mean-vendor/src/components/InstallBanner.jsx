@@ -6,6 +6,7 @@ export default function InstallBanner() {
   const { isInstallable, isInstalled, install } = usePWAInstall();
   const [dismissed, setDismissed] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [justInstalled, setJustInstalled] = useState(false);
 
   useEffect(() => {
     const dismissedAt = localStorage.getItem('vendor-install-dismissed');
@@ -25,8 +26,32 @@ export default function InstallBanner() {
 
   const handleInstall = async () => {
     const accepted = await install();
-    if (accepted) handleDismiss();
+    if (accepted) setJustInstalled(true);
   };
+
+  // Show post-install message (browser couldn't auto-close)
+  if (justInstalled || (isInstalled && !dismissed && !window.matchMedia('(display-mode: standalone)').matches)) {
+    return (
+      <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center mb-5">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-surface-900">App Installed!</h2>
+        <p className="text-sm text-surface-400 mt-2 max-w-xs">
+          Ready മീൻ Vendor has been added to your home screen. Open it from there for the best experience.
+        </p>
+        <p className="text-xs text-surface-300 mt-4">You can close this browser tab now</p>
+        <button
+          onClick={() => { setJustInstalled(false); handleDismiss(); }}
+          className="mt-6 px-6 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl"
+        >
+          Got it
+        </button>
+      </div>
+    );
+  }
 
   if (isInstalled || dismissed || (!isInstallable && !isIOS)) return null;
 

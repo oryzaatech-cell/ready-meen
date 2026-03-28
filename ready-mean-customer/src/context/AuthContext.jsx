@@ -150,6 +150,15 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
+    // Clear all user-specific data to prevent cross-user leaks
+    localStorage.removeItem('readymeen_remembered_pw');
+    localStorage.removeItem('install-banner-dismissed');
+    if ('caches' in window) {
+      try {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k.includes('api')).map(k => caches.delete(k)));
+      } catch (_) {}
+    }
   };
 
   const saveProfile = async (profileData) => {

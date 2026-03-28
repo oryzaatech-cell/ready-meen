@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
+import { useRealtime } from './RealtimeContext';
 import { requestNotificationPermission, onForegroundMessage } from '../config/firebase';
 
 const NotificationContext = createContext({ notifications: [], unreadCount: 0, markAllRead: () => {}, refresh: () => {} });
@@ -8,6 +9,7 @@ const NotificationContext = createContext({ notifications: [], unreadCount: 0, m
 export function NotificationProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const { get, put } = useApi();
+  const { orderVersion } = useRealtime();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -65,18 +67,14 @@ export function NotificationProvider({ children }) {
     return unsubscribe;
   }, [isAuthenticated, fetchNotifications]);
 
-  // Poll every 20 seconds (vendor needs faster updates) + refresh on window focus (single listener)
+  // Refresh on realtime order updates + window focus
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 20000);
     const onFocus = () => fetchNotifications();
     window.addEventListener('focus', onFocus);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('focus', onFocus);
-    };
-  }, [isAuthenticated, fetchNotifications]);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [isAuthenticated, fetchNotifications, orderVersion]);
 
   const markAllRead = useCallback(async () => {
     try {

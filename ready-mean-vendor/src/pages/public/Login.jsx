@@ -17,14 +17,16 @@ export default function Login() {
 
   useEffect(() => {
     const savedMobile = localStorage.getItem('vendor_remembered_mobile');
-    const savedPw = localStorage.getItem('vendor_remembered_pw');
     if (savedMobile) {
       setMobile(savedMobile);
       setRemember(true);
+      const savedPw = localStorage.getItem(`vendor_pw_${savedMobile}`);
+      if (savedPw) {
+        try { setPassword(atob(savedPw)); } catch (_) {}
+      }
     }
-    if (savedPw) {
-      try { setPassword(atob(savedPw)); } catch (_) {}
-    }
+    // Clean up old non-user-specific password
+    localStorage.removeItem('vendor_remembered_pw');
   }, []);
 
   const handleSubmit = async (e) => {
@@ -35,10 +37,10 @@ export default function Login() {
 
     if (remember) {
       localStorage.setItem('vendor_remembered_mobile', mobile.trim());
-      localStorage.setItem('vendor_remembered_pw', btoa(password));
+      localStorage.setItem(`vendor_pw_${mobile.trim()}`, btoa(password));
     } else {
       localStorage.removeItem('vendor_remembered_mobile');
-      localStorage.removeItem('vendor_remembered_pw');
+      localStorage.removeItem(`vendor_pw_${mobile.trim()}`);
     }
 
     setLoading(true);

@@ -11,10 +11,12 @@ import Spinner from '../../components/ui/Spinner';
 import formatCurrency from '../../shared/formatCurrency';
 import { canCancel, isCancelPending } from '../../shared/constants';
 import { useAuth } from '../../hooks/useAuth';
+import { useRealtime } from '../../context/RealtimeContext';
 
 export default function CustomerOrderDetail() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { orderVersion } = useRealtime();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,7 @@ export default function CustomerOrderDetail() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const { get, put } = useApi();
 
-  useEffect(() => { loadOrder(); }, [id]);
+  useEffect(() => { loadOrder(); }, [id, orderVersion]);
 
   async function loadOrder() {
     try {

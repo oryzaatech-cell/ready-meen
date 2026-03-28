@@ -34,6 +34,7 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
         title: 'New Order Received!',
         body: `Order #${result.order.id} — ₹${result.order.total_amt} (${payment_method === 'cod' ? 'COD' : 'Paid'})`,
         data: { type: 'new_order', order_id: String(result.order.id) },
+        role: 'vendor',
       }).catch(() => {});
     }
 
@@ -42,6 +43,7 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
       title: 'Order Placed!',
       body: `Your order #${result.order.id} for ₹${result.order.total_amt} has been placed`,
       data: { type: 'order_placed', order_id: String(result.order.id) },
+      role: 'customer',
     }).catch(() => {});
 
     res.status(201).json({ order: result.order });
@@ -222,6 +224,7 @@ router.put('/:id/status', authenticateUser, requireRole('vendor', 'admin'), asyn
         title: `Order ${statusLabels[status] || status}`,
         body: `Your order #${result.order.id} is now ${statusLabels[status] || status}`,
         data: { type: 'order_update', order_id: String(result.order.id) },
+        role: 'customer',
       }).catch(() => {});
     }
 
@@ -294,6 +297,7 @@ router.put('/:id/vendor-cancel', authenticateUser, requireRole('vendor', 'admin'
         title: 'Order Cancelled by Vendor',
         body: `Your order #${order.id} has been cancelled by the vendor`,
         data: { type: 'order_cancelled', order_id: String(order.id) },
+        role: 'customer',
       }).catch(() => {});
     }
 
@@ -371,6 +375,7 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
           title: 'Order Cancelled',
           body: `Customer cancelled Order #${order.id}`,
           data: { type: 'order_cancelled', order_id: String(order.id) },
+          role: 'vendor',
         }).catch(() => {});
       }
 
@@ -379,6 +384,7 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
         title: 'Order Cancelled',
         body: `Your order #${order.id} has been cancelled`,
         data: { type: 'order_cancelled', order_id: String(order.id) },
+        role: 'customer',
       }).catch(() => {});
 
       return res.json({ order: data });
@@ -403,6 +409,7 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
         title: 'Cancel Request',
         body: `Customer wants to cancel Order #${order.id}`,
         data: { type: 'cancel_request', order_id: String(order.id) },
+        role: 'vendor',
       }).catch(() => {});
     }
 
@@ -482,6 +489,7 @@ router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin
           title: 'Order Cancelled',
           body: `Your cancellation request for Order #${order.id} has been approved`,
           data: { type: 'cancel_approved', order_id: String(order.id) },
+          role: 'customer',
         }).catch(() => {});
       }
 
@@ -507,6 +515,7 @@ router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin
         title: 'Cancel Request Rejected',
         body: `Your cancellation request for Order #${order.id} was rejected by the vendor`,
         data: { type: 'cancel_rejected', order_id: String(order.id) },
+        role: 'customer',
       }).catch(() => {});
     }
 

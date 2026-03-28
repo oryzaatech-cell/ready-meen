@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, Phone, ArrowLeft, ShoppingBag, Scissors, Sparkles } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
+import { useRealtime } from '../../context/RealtimeContext';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -19,8 +20,9 @@ export default function VendorOrderDetail() {
   const [respondingCancel, setRespondingCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const { get, put } = useApi();
+  const { orderVersion } = useRealtime();
 
-  useEffect(() => { loadOrder(); }, [id]);
+  useEffect(() => { loadOrder(); }, [id, orderVersion]);
 
   async function loadOrder() {
     try {

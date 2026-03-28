@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Copy, Share2, Check, Settings, LogOut, ChevronUp, ClipboardList, IndianRupee, Hash, MapPin, Store } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
+import { useRealtime } from '../../context/RealtimeContext';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
@@ -24,6 +25,7 @@ export default function VendorDashboard() {
 
   const { get } = useApi();
   const { user, signOut, saveProfile } = useAuth();
+  const { orderVersion } = useRealtime();
 
   const vendorCode = user?.vendor_code;
   const customerAppUrl =
@@ -43,7 +45,7 @@ export default function VendorDashboard() {
     }
   }, []);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [orderVersion]);
 
   useEffect(() => {
     if (user) {

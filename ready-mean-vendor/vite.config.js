@@ -70,14 +70,9 @@ export default defineConfig({
             },
           },
           {
-            // API calls — always network first (real-time orders, stock)
+            // API calls — never cache (user-specific data, real-time orders/stock)
             urlPattern: /\/api\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-responses',
-              networkTimeoutSeconds: 5,
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
-            },
+            handler: 'NetworkOnly',
           },
         ],
       },

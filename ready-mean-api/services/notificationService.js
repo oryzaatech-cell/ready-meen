@@ -36,13 +36,14 @@ async function initFirebase() {
 /**
  * Send notification to a user — saves to DB + sends FCM push if available.
  */
-export async function sendNotification(userId, { title, body, data = {} }) {
+export async function sendNotification(userId, { title, body, data = {}, role = null }) {
   const { default: supabase } = await import('../config/supabase.js');
 
   // Always save to DB for in-app notifications
   try {
     const { error: dbError } = await supabase.from('notifications').insert({
       user_id: userId,
+      user_role: role || 'customer',
       title,
       body,
       type: data.type || 'order',
@@ -58,28 +59,47 @@ export async function sendNotification(userId, { title, body, data = {} }) {
   if (!ready) return;
 
   try {
-    // Check both user_info and vendor_info for the FCM token
+    // Look up FCM token from the correct table based on role
     let fcmToken = null;
     let tokenTable = null;
 
-    const { data: user } = await supabase
-      .from('user_info')
-      .select('fcm_token')
-      .eq('id', userId)
-      .maybeSingle();
-
-    fcmToken = user?.fcm_token;
-    if (fcmToken) tokenTable = 'user_info';
-
-    if (!fcmToken) {
+    if (role === 'vendor') {
+      // Vendor — check vendor_info first
       const { data: vendor } = await supabase
         .from('vendor_info')
         .select('fcm_token')
         .eq('id', userId)
         .maybeSingle();
-
       fcmToken = vendor?.fcm_token;
       if (fcmToken) tokenTable = 'vendor_info';
+    } else if (role === 'customer') {
+      // Customer — check user_info first
+      const { data: user } = await supabase
+        .from('user_info')
+        .select('fcm_token')
+        .eq('id', userId)
+        .maybeSingle();
+      fcmToken = user?.fcm_token;
+      if (fcmToken) tokenTable = 'user_info';
+    } else {
+      // Fallback: check both (legacy calls without role)
+      const { data: user } = await supabase
+        .from('user_info')
+        .select('fcm_token')
+        .eq('id', userId)
+        .maybeSingle();
+      fcmToken = user?.fcm_token;
+      if (fcmToken) tokenTable = 'user_info';
+
+      if (!fcmToken) {
+        const { data: vendor } = await supabase
+          .from('vendor_info')
+          .select('fcm_token')
+          .eq('id', userId)
+          .maybeSingle();
+        fcmToken = vendor?.fcm_token;
+        if (fcmToken) tokenTable = 'vendor_info';
+      }
     }
 
     if (!fcmToken) return;

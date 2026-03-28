@@ -21,6 +21,8 @@ export function usePWAInstall() {
       setIsInstalled(true);
       setIsInstallable(false);
       setDeferredPrompt(null);
+      // Try to close browser tab and open in installed app
+      try { window.close(); } catch (_) {}
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);

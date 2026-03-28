@@ -1,13 +1,20 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
+import { useRealtime } from './RealtimeContext';
 
 const ActiveOrdersContext = createContext({ activeCount: 0 });
 
 export function ActiveOrdersProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const { get } = useApi();
+  const { orderVersion } = useRealtime();
   const [activeCount, setActiveCount] = useState(0);
+
+  // Reset count when user logs out
+  useEffect(() => {
+    if (!isAuthenticated) setActiveCount(0);
+  }, [isAuthenticated]);
 
   const checkActiveOrders = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -24,9 +31,7 @@ export function ActiveOrdersProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated) return;
     checkActiveOrders();
-    const interval = setInterval(checkActiveOrders, 60000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, checkActiveOrders]);
+  }, [isAuthenticated, checkActiveOrders, orderVersion]);
 
   useEffect(() => {
     if (!isAuthenticated) return;

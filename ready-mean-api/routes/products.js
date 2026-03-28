@@ -104,8 +104,9 @@ router.post('/upload-image', authenticateUser, requireRole('vendor', 'admin'), u
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    // Compress: resize to max 800px, convert to WebP at quality 80
+    // Auto-rotate based on EXIF orientation, then resize and compress
     const compressed = await sharp(req.file.buffer)
+      .rotate()
       .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 80 })
       .toBuffer();

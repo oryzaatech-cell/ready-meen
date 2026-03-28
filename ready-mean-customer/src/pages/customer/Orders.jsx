@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardList, ChevronRight, Fish, Package, ChevronLeft } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
+import { useRealtime } from '../../context/RealtimeContext';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
@@ -12,6 +13,7 @@ export default function CustomerOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const { get } = useApi();
+  const { orderVersion } = useRealtime();
   const navigate = useNavigate();
 
   const loadOrders = useCallback(async () => {
@@ -25,7 +27,7 @@ export default function CustomerOrders() {
     }
   }, []);
 
-  useEffect(() => { loadOrders(); }, []);
+  useEffect(() => { loadOrders(); }, [orderVersion]);
 
   const { PullIndicator } = usePullToRefresh(loadOrders);
 

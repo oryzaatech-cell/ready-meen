@@ -166,7 +166,7 @@ router.post('/profile', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: nameCheck.error });
     }
 
-    const validRoles = ['customer', 'vendor', 'admin'];
+    const validRoles = ['customer', 'vendor'];
     if (role && !validRoles.includes(role)) {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
     }

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -26,10 +26,17 @@ function PageLoader() {
 }
 
 export default function App() {
-  const { loading, isAuthenticated } = useAuth();
-  const [onboardingDone, setOnboardingDone] = useState(
-    () => !!localStorage.getItem('vendor_onboarding_done')
-  );
+  const { loading, isAuthenticated, user } = useAuth();
+  const [onboardingDone, setOnboardingDone] = useState(false);
+
+  // Check onboarding per vendor (not shared across accounts)
+  useEffect(() => {
+    if (user?.db_id) {
+      setOnboardingDone(!!localStorage.getItem(`vendor_onboarding_done_${user.db_id}`));
+    } else {
+      setOnboardingDone(false);
+    }
+  }, [user?.db_id]);
 
   if (loading) return <PageLoader />;
 
@@ -57,7 +64,10 @@ export default function App() {
       {isAuthenticated && !onboardingDone && (
         <Onboarding
           isOpen={true}
-          onComplete={() => setOnboardingDone(true)}
+          onComplete={() => {
+            if (user?.db_id) localStorage.setItem(`vendor_onboarding_done_${user.db_id}`, '1');
+            setOnboardingDone(true);
+          }}
         />
       )}
     </>

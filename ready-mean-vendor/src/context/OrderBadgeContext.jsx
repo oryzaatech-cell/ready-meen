@@ -1,12 +1,14 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
+import { useRealtime } from './RealtimeContext';
 
 const OrderBadgeContext = createContext({ newCount: 0, markSeen: () => {} });
 
 export function OrderBadgeProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const { get } = useApi();
+  const { orderVersion } = useRealtime();
   const [newCount, setNewCount] = useState(0);
   const lastSeenRef = useRef(localStorage.getItem('vendor_orders_last_seen') || '');
 
@@ -36,13 +38,11 @@ export function OrderBadgeProvider({ children }) {
     }
   }, [isAuthenticated]);
 
-  // Poll every 30 seconds
+  // Refresh on realtime order updates
   useEffect(() => {
     if (!isAuthenticated) return;
     checkNewOrders();
-    const interval = setInterval(checkNewOrders, 30000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, checkNewOrders]);
+  }, [isAuthenticated, checkNewOrders, orderVersion]);
 
   // Also check on window focus
   useEffect(() => {

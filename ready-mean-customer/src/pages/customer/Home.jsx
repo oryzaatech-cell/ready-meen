@@ -4,6 +4,7 @@ import { Search, Fish, X, Waves, ShoppingBag } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../context/CartContext';
+import { useRealtime } from '../../context/RealtimeContext';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import ProductCard from '../../components/ProductCard';
@@ -16,6 +17,7 @@ export default function Home() {
   const { get } = useApi();
   const { user } = useAuth();
   const { itemCount } = useCart();
+  const { productVersion } = useRealtime();
   const navigate = useNavigate();
 
   const loadProducts = useCallback(async () => {
@@ -29,7 +31,7 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => { loadProducts(); }, []);
+  useEffect(() => { loadProducts(); }, [productVersion]);
 
   useEffect(() => {
     const handleFocus = () => loadProducts();

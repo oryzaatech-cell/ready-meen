@@ -4,6 +4,7 @@ import { ClipboardList, ChevronRight, Clock, MapPin, Phone } from 'lucide-react'
 import { useApi } from '../../hooks/useApi';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { useOrderBadge } from '../../context/OrderBadgeContext';
+import { useRealtime } from '../../context/RealtimeContext';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
 import OrderStatusBadge from '../../components/OrderStatusBadge';
@@ -18,6 +19,7 @@ export default function VendorOrders() {
   const [loading, setLoading] = useState(true);
   const { get } = useApi();
   const { markSeen } = useOrderBadge();
+  const { orderVersion } = useRealtime();
 
   const loadOrders = useCallback(async () => {
     try {
@@ -30,7 +32,7 @@ export default function VendorOrders() {
     }
   }, []);
 
-  useEffect(() => { loadOrders(); markSeen(); }, []);
+  useEffect(() => { loadOrders(); markSeen(); }, [orderVersion]);
 
   const { PullIndicator } = usePullToRefresh(loadOrders);
 

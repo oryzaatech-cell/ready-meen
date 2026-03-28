@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle, Package, Fish, Pencil, Trash2, Ban, RotateCcw } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
+import { useRealtime } from '../../context/RealtimeContext';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import PageLayout from '../../components/layout/PageLayout';
 import Card from '../../components/ui/Card';
@@ -16,6 +17,7 @@ export default function VendorProducts() {
   const [actionLoading, setActionLoading] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const { get, put, del } = useApi();
+  const { productVersion } = useRealtime();
 
   const loadProducts = useCallback(async () => {
     try {
@@ -28,7 +30,7 @@ export default function VendorProducts() {
     }
   }, []);
 
-  useEffect(() => { loadProducts(); }, []);
+  useEffect(() => { loadProducts(); }, [productVersion]);
 
   useEffect(() => {
     const handleFocus = () => loadProducts();
