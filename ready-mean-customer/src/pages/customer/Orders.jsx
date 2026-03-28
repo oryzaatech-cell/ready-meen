@@ -77,23 +77,25 @@ export default function CustomerOrders() {
                 <OrderStatusBadge status={order.status} />
               </div>
 
-              {/* Item thumbnails */}
+              {/* Ordered items */}
               {order.order_items?.length > 0 && (
-                <div className="flex gap-1.5 mt-3">
-                  {order.order_items.slice(0, 3).map((item, i) => (
-                    <div key={i} className="w-10 h-10 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center border border-gray-100">
-                      {item.product?.image_url ? (
-                        <img src={item.product.image_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <Fish size={13} className="text-gray-200" />
-                      )}
+                <div className="mt-3 space-y-1.5">
+                  {order.order_items.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center border border-gray-100">
+                        {item.product?.image_url ? (
+                          <img src={item.product.image_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Fish size={12} className="text-gray-200" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-700 truncate">{item.product?.name || 'Item'}</p>
+                        <p className="text-[10px] text-gray-400">{item.qty} kg{item.cutting_type ? ` · ${item.cutting_type}` : ''}</p>
+                      </div>
+                      <span className="text-xs font-semibold text-gray-600">{formatCurrency(item.price * item.qty)}</span>
                     </div>
                   ))}
-                  {order.order_items.length > 3 && (
-                    <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-100">
-                      <span className="text-[10px] font-bold text-gray-400">+{order.order_items.length - 3}</span>
-                    </div>
-                  )}
                 </div>
               )}
 

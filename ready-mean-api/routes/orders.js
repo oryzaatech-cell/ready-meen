@@ -90,10 +90,23 @@ router.get('/', authenticateUser, async (req, res) => {
         .select('*')
         .in('order_id', orderIds);
 
+      // Fetch product info for item names and images
+      const productIds = [...new Set((allItems || []).map(i => i.product_id).filter(Boolean))];
+      let productsMap = {};
+      if (productIds.length > 0) {
+        const { data: products } = await supabase
+          .from('product_info')
+          .select('id, name, image_url')
+          .in('id', productIds);
+        for (const p of (products || [])) {
+          productsMap[p.id] = p;
+        }
+      }
+
       const itemsByOrder = {};
       for (const item of (allItems || [])) {
         if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
-        itemsByOrder[item.order_id].push(item);
+        itemsByOrder[item.order_id].push({ ...item, product: productsMap[item.product_id] || null });
       }
 
       // Fetch customer info for each order
