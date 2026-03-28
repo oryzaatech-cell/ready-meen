@@ -91,7 +91,7 @@ export default function CustomerOrders() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-gray-700 truncate">{item.product?.name || 'Item'}</p>
-                        <p className="text-[10px] text-gray-400">{item.qty} kg{item.cutting_type ? ` · ${item.cutting_type}` : ''}</p>
+                        <p className="text-[10px] text-gray-400">{item.qty} kg</p>
                       </div>
                       <span className="text-xs font-semibold text-gray-600">{formatCurrency(item.price * item.qty)}</span>
                     </div>
