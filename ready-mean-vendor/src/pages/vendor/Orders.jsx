@@ -97,6 +97,17 @@ export default function VendorOrders() {
                     <ChevronRight size={16} className="text-surface-300 mt-0.5 group-hover:text-primary-500 group-hover:translate-x-0.5 transition-all" />
                   </div>
                 </div>
+                {/* Item list */}
+                {order.order_items?.length > 0 && (
+                  <div className="mt-2.5 pt-2.5 border-t border-surface-100/80 space-y-1">
+                    {order.order_items.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <span className="text-xs text-surface-600">{item.product?.name || 'Item'}</span>
+                        <span className="text-xs font-medium text-surface-500">{item.qty} kg</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {order.shipping_address && (() => {
                   const lines = order.shipping_address.split('\n');
                   const mobileLine = lines[0]?.startsWith('Mobile:') ? lines[0] : null;
