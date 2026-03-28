@@ -77,9 +77,14 @@ export function AuthProvider({ children }) {
       handleSession(s).then(() => setLoading(false));
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
-      handleSession(s);
+      // Only fetch profile on sign-in, not on token refresh
+      if (event === 'SIGNED_IN') {
+        handleSession(s);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
     });
 
     return () => subscription.unsubscribe();

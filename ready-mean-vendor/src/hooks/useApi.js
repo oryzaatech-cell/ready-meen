@@ -1,13 +1,14 @@
 import { useCallback } from 'react';
-import { useAuth } from './useAuth';
+import { supabase } from '../config/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function useApi() {
-  const { session } = useAuth();
-
   const request = useCallback(
     async (path, options = {}) => {
+      // Always get the freshest token from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+
       const headers = {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -26,7 +27,7 @@ export function useApi() {
 
       return res.json();
     },
-    [session]
+    []
   );
 
   const get = useCallback((path) => request(path), [request]);

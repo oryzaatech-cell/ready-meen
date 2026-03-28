@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ImagePlus, X, Scissors, Sparkles, Plus as PlusIcon, ZoomIn, ZoomOut, Camera, Image as GalleryIcon, ChevronDown } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../config/supabase';
 import PageLayout from '../../components/layout/PageLayout';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -145,12 +146,16 @@ export default function AddProduct() {
   const uploadImage = async () => {
     if (!imageFile) return null;
 
+    // Get fresh token to avoid expired token errors
+    const { data: { session: freshSession } } = await supabase.auth.getSession();
+    const token = freshSession?.access_token;
+
     const formData = new FormData();
     formData.append('image', imageFile, imageFile.name);
 
     const res = await fetch(`${API_URL}/products/upload-image`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
 
