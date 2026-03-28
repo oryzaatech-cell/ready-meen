@@ -30,12 +30,15 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
 
     // Notify vendor about new order (non-blocking)
     if (result.order?.vendor_id) {
+      console.log('Sending vendor notification to vendor_id:', result.order.vendor_id);
       sendNotification(result.order.vendor_id, {
         title: 'New Order Received!',
         body: `Order #${result.order.id} — ₹${result.order.total_amt} (${payment_method === 'cod' ? 'COD' : 'Paid'})`,
         data: { type: 'new_order', order_id: String(result.order.id) },
         role: 'vendor',
-      }).catch(() => {});
+      }).catch(err => console.error('Vendor notification failed:', err));
+    } else {
+      console.warn('Order has no vendor_id, skipping vendor notification');
     }
 
     // Confirm to customer
@@ -44,7 +47,7 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
       body: `Your order #${result.order.id} for ₹${result.order.total_amt} has been placed`,
       data: { type: 'order_placed', order_id: String(result.order.id) },
       role: 'customer',
-    }).catch(() => {});
+    }).catch(err => console.error('Customer notification failed:', err));
 
     res.status(201).json({ order: result.order });
   } catch (err) {

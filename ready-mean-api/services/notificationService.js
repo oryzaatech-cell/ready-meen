@@ -41,15 +41,17 @@ export async function sendNotification(userId, { title, body, data = {}, role = 
 
   // Always save to DB for in-app notifications
   try {
-    const { error: dbError } = await supabase.from('notifications').insert({
+    const insertData = {
       user_id: userId,
       user_role: role || 'customer',
       title,
       body,
       type: data.type || 'order',
       order_id: data.order_id ? Number(data.order_id) : null,
-    });
-    if (dbError) console.warn('Failed to save notification:', dbError.message);
+    };
+    console.log('Saving notification:', JSON.stringify(insertData));
+    const { error: dbError } = await supabase.from('notifications').insert(insertData);
+    if (dbError) console.error('Failed to save notification:', dbError.message, dbError);
   } catch (err) {
     console.warn('Failed to save notification to DB:', err.message);
   }
