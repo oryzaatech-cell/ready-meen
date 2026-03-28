@@ -28,27 +28,30 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
       return res.status(400).json({ error: result.error });
     }
 
-    // Notify vendor about new order (non-blocking)
-    console.log('Order placed:', { id: result.order?.id, vendor_id: result.order?.vendor_id, user_vendor_id: req.user.vendor_id });
+    // Send notifications before responding (Vercel kills function after response)
+    const notifications = [];
+
     if (result.order?.vendor_id) {
-      console.log('Sending vendor notification to vendor_id:', result.order.vendor_id);
-      sendNotification(result.order.vendor_id, {
-        title: 'New Order Received!',
-        body: `Order #${result.order.id} — ₹${result.order.total_amt} (${payment_method === 'cod' ? 'COD' : 'Paid'})`,
-        data: { type: 'new_order', order_id: String(result.order.id) },
-        role: 'vendor',
-      }).catch(err => console.error('Vendor notification failed:', err));
-    } else {
-      console.warn('Order has no vendor_id, skipping vendor notification');
+      notifications.push(
+        sendNotification(result.order.vendor_id, {
+          title: 'New Order Received!',
+          body: `Order #${result.order.id} — ₹${result.order.total_amt} (${payment_method === 'cod' ? 'COD' : 'Paid'})`,
+          data: { type: 'new_order', order_id: String(result.order.id) },
+          role: 'vendor',
+        }).catch(err => console.error('Vendor notification failed:', err))
+      );
     }
 
-    // Confirm to customer
-    sendNotification(req.user.db_id, {
-      title: 'Order Placed!',
-      body: `Your order #${result.order.id} for ₹${result.order.total_amt} has been placed`,
-      data: { type: 'order_placed', order_id: String(result.order.id) },
-      role: 'customer',
-    }).catch(err => console.error('Customer notification failed:', err));
+    notifications.push(
+      sendNotification(req.user.db_id, {
+        title: 'Order Placed!',
+        body: `Your order #${result.order.id} for ₹${result.order.total_amt} has been placed`,
+        data: { type: 'order_placed', order_id: String(result.order.id) },
+        role: 'customer',
+      }).catch(err => console.error('Customer notification failed:', err))
+    );
+
+    await Promise.all(notifications);
 
     res.status(201).json({ order: result.order });
   } catch (err) {
@@ -234,10 +237,10 @@ router.put('/:id/status', authenticateUser, requireRole('vendor', 'admin'), asyn
       return res.status(400).json({ error: result.error });
     }
 
-    // Notify customer about status change (non-blocking)
+    // Notify customer about status change
     if (result.order?.user_id) {
       const statusLabels = { processing: 'Being Prepared', ready: 'Ready for Delivery', delivered: 'Delivered' };
-      sendNotification(result.order.user_id, {
+      await sendNotification(result.order.user_id, {
         title: `Order ${statusLabels[status] || status}`,
         body: `Your order #${result.order.id} is now ${statusLabels[status] || status}`,
         data: { type: 'order_update', order_id: String(result.order.id) },
@@ -310,7 +313,7 @@ router.put('/:id/vendor-cancel', authenticateUser, requireRole('vendor', 'admin'
 
     // Notify customer
     if (order.user_id) {
-      sendNotification(order.user_id, {
+      await sendNotification(order.user_id, {
         title: 'Order Cancelled by Vendor',
         body: `Your order #${order.id} has been cancelled by the vendor`,
         data: { type: 'order_cancelled', order_id: String(order.id) },
@@ -386,23 +389,23 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
         }
       }
 
-      // Notify vendor that customer cancelled
+      // Notify vendor and customer about cancellation
+      const cancelNotifs = [];
       if (order.vendor_id) {
-        sendNotification(order.vendor_id, {
+        cancelNotifs.push(sendNotification(order.vendor_id, {
           title: 'Order Cancelled',
           body: `Customer cancelled Order #${order.id}`,
           data: { type: 'order_cancelled', order_id: String(order.id) },
           role: 'vendor',
-        }).catch(() => {});
+        }).catch(() => {}));
       }
-
-      // Confirm cancellation to customer
-      sendNotification(order.user_id, {
+      cancelNotifs.push(sendNotification(order.user_id, {
         title: 'Order Cancelled',
         body: `Your order #${order.id} has been cancelled`,
         data: { type: 'order_cancelled', order_id: String(order.id) },
         role: 'customer',
-      }).catch(() => {});
+      }).catch(() => {}));
+      await Promise.all(cancelNotifs);
 
       return res.json({ order: data });
     }
@@ -422,7 +425,7 @@ router.put('/:id/cancel', authenticateUser, async (req, res) => {
 
     // Notify vendor about cancel request
     if (order.vendor_id) {
-      sendNotification(order.vendor_id, {
+      await sendNotification(order.vendor_id, {
         title: 'Cancel Request',
         body: `Customer wants to cancel Order #${order.id}`,
         data: { type: 'cancel_request', order_id: String(order.id) },
@@ -502,7 +505,7 @@ router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin
 
       // Notify customer
       if (order.user_id) {
-        sendNotification(order.user_id, {
+        await sendNotification(order.user_id, {
           title: 'Order Cancelled',
           body: `Your cancellation request for Order #${order.id} has been approved`,
           data: { type: 'cancel_approved', order_id: String(order.id) },
@@ -528,7 +531,7 @@ router.put('/:id/cancel-respond', authenticateUser, requireRole('vendor', 'admin
 
     // Notify customer
     if (order.user_id) {
-      sendNotification(order.user_id, {
+      await sendNotification(order.user_id, {
         title: 'Cancel Request Rejected',
         body: `Your cancellation request for Order #${order.id} was rejected by the vendor`,
         data: { type: 'cancel_rejected', order_id: String(order.id) },
