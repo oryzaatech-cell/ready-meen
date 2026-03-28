@@ -29,6 +29,7 @@ router.post('/', authenticateUser, requireRole('customer'), async (req, res) => 
     }
 
     // Notify vendor about new order (non-blocking)
+    console.log('Order placed:', { id: result.order?.id, vendor_id: result.order?.vendor_id, user_vendor_id: req.user.vendor_id });
     if (result.order?.vendor_id) {
       console.log('Sending vendor notification to vendor_id:', result.order.vendor_id);
       sendNotification(result.order.vendor_id, {
