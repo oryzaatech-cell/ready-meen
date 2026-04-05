@@ -115,7 +115,6 @@ export async function sendNotification(userId, { title, body, data = {}, role = 
 
     console.log(`FCM: Sending push to ${role} id=${userId}, token=${fcmToken.substring(0, 20)}...`);
 
-    // Send as data-only message so the service worker always controls display.
     const stringData = {};
     for (const [k, v] of Object.entries(data)) {
       stringData[k] = String(v);
@@ -127,14 +126,23 @@ export async function sendNotification(userId, { title, body, data = {}, role = 
       token: fcmToken,
       data: stringData,
       webpush: {
-        headers: { Urgency: 'high' },
-        fcmOptions: { link: data.order_id ? `/orders/${data.order_id}` : '/orders' },
+        headers: { Urgency: 'high', TTL: '86400' },
+        notification: {
+          title,
+          body,
+          icon: '/icons/icon-192.png',
+          badge: '/icons/icon-192.png',
+          tag: data.order_id ? `order-${data.order_id}` : 'ready-meen',
+          renotify: true,
+          requireInteraction: true,
+        },
       },
       android: {
         priority: 'high',
+        notification: { title, body, icon: '/icons/icon-192.png', sound: 'default' },
       },
       apns: {
-        payload: { aps: { 'content-available': 1, alert: { title, body }, sound: 'default', badge: 1 } },
+        payload: { aps: { alert: { title, body }, sound: 'default', badge: 1 } },
       },
     });
     console.log(`FCM: Push sent successfully, messageId=${result}`);

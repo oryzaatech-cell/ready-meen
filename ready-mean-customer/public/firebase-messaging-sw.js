@@ -2,6 +2,10 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
+// Activate new service worker immediately
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+
 firebase.initializeApp({
   apiKey: 'AIzaSyBa-wiRKnMUsgqQwGCfut1whd3VGiP9dzE',
   authDomain: 'ready-meen.firebaseapp.com',
@@ -13,26 +17,27 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Background messages — update badge
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || payload.data?.title;
-  const body = payload.notification?.body || payload.data?.body;
-  if (!title) return;
-
-  const options = {
-    body,
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
-    tag: payload.data?.order_id ? `order-${payload.data.order_id}` : 'ready-meen',
-    renotify: true,
-    data: payload.data || {},
-  };
-
-  // Update app badge count
   if (self.navigator?.setAppBadge) {
     self.navigator.setAppBadge();
   }
-
-  self.registration.showNotification(title, options);
+  // webpush.notification in the FCM payload auto-shows the notification,
+  // so we only manually show for data-only messages
+  if (!payload.notification) {
+    const title = payload.data?.title;
+    const body = payload.data?.body;
+    if (title) {
+      self.registration.showNotification(title, {
+        body,
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
+        tag: payload.data?.order_id ? `order-${payload.data.order_id}` : 'ready-meen',
+        renotify: true,
+        data: payload.data || {},
+      });
+    }
+  }
 });
 
 // Handle notification click — open the order
@@ -52,33 +57,4 @@ self.addEventListener('notificationclick', (event) => {
       return clients.openWindow(url);
     })
   );
-});
-
-// Handle push events directly as fallback
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-
-  try {
-    const payload = event.data.json();
-    const title = payload.notification?.title || payload.data?.title;
-    const body = payload.notification?.body || payload.data?.body;
-    if (!title) return;
-
-    const options = {
-      body,
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      tag: payload.data?.order_id ? `order-${payload.data.order_id}` : 'ready-meen',
-      renotify: true,
-      data: payload.data || {},
-    };
-
-    if (self.navigator?.setAppBadge) {
-      self.navigator.setAppBadge();
-    }
-
-    event.waitUntil(self.registration.showNotification(title, options));
-  } catch (e) {
-    // not JSON, ignore
-  }
 });
