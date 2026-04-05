@@ -39,13 +39,6 @@ export const FISH_NAMES = [
 
 // Common cutting types with Malayalam translations
 export const CUTTING_TYPES = [
-  { en: 'Steaks', ml: 'സ്റ്റീക്ക്' },
-  { en: 'Fillets', ml: 'ഫില്ലറ്റ്' },
   { en: 'Curry Cut', ml: 'കറി കട്ട്' },
   { en: 'Biriyani Cut', ml: 'ബിരിയാണി കട്ട്' },
-  { en: 'Cubes', ml: 'കഷണങ്ങൾ' },
-  { en: 'Head & Tail removed', ml: 'തല & വാൽ നീക്കം' },
-  { en: 'Thin Slices', ml: 'നേർത്ത കഷണങ്ങൾ' },
-  { en: 'Medium Pieces', ml: 'ഇടത്തരം കഷണങ്ങൾ' },
-  { en: 'Finger Pieces', ml: 'ഫിംഗർ പീസ്' },
 ];

@@ -106,26 +106,28 @@ export async function sendNotification(userId, { title, body, data = {}, role = 
 
     if (!fcmToken) return;
 
+    // Send as data-only message so the service worker always controls display.
+    // Including `notification` key causes the browser to auto-handle it and
+    // skip onBackgroundMessage, which breaks badge and custom notification display.
+    const stringData = {};
+    for (const [k, v] of Object.entries(data)) {
+      stringData[k] = String(v);
+    }
+    stringData.title = title;
+    stringData.body = body;
+
     await firebaseAdmin.messaging().send({
       token: fcmToken,
-      notification: { title, body },
-      data: { ...data, title, body },
+      data: stringData,
       webpush: {
-        notification: {
-          title,
-          body,
-          icon: '/icons/icon-192.png',
-          badge: '/icons/icon-192.png',
-          data: { ...data, title, body },
-        },
+        headers: { Urgency: 'high' },
         fcmOptions: { link: data.order_id ? `/orders/${data.order_id}` : '/orders' },
       },
       android: {
         priority: 'high',
-        notification: { title, body, icon: '/icons/icon-192.png' },
       },
       apns: {
-        payload: { aps: { alert: { title, body }, sound: 'default', badge: 1 } },
+        payload: { aps: { 'content-available': 1, alert: { title, body }, sound: 'default', badge: 1 } },
       },
     });
   } catch (err) {

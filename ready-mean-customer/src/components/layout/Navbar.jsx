@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogOut, User, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -7,9 +8,11 @@ import NotificationBell from '../NotificationBell';
 export default function Navbar() {
   const { signOut, isAuthenticated } = useAuth();
   const { itemCount } = useCart();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   return (
-    <nav className="bg-white/90 backdrop-blur-xl border-b border-gray-100/50 sticky top-0 z-40 shadow-[0_1px_8px_rgba(0,0,0,0.03)]">
+    <>
+    <nav className="bg-white border-b border-gray-100/50 z-40 shadow-[0_1px_8px_rgba(0,0,0,0.03)] flex-shrink-0">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <Link to="/home" className="flex items-center -ml-3">
@@ -40,7 +43,7 @@ export default function Navbar() {
                 <Link to="/profile" className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                   <User size={20} className="text-gray-600" />
                 </Link>
-                <button onClick={signOut} className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <button onClick={() => setShowLogoutConfirm(true)} className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                   <LogOut size={20} className="text-gray-600" />
                 </button>
               </>
@@ -51,5 +54,30 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+
+    {/* Logout Confirmation */}
+    {showLogoutConfirm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)}>
+        <div className="bg-white rounded-2xl shadow-xl mx-6 p-6 w-full max-w-xs" onClick={e => e.stopPropagation()}>
+          <p className="text-sm font-semibold text-gray-800 mb-1">Sign Out</p>
+          <p className="text-sm text-gray-500 mb-5">Are you sure you want to sign out?</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowLogoutConfirm(false)}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={signOut}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

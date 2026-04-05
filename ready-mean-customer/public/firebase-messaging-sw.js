@@ -14,20 +14,23 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  // If a notification payload is present, the browser shows it automatically.
-  // Only manually show when we have data-only messages.
-  if (payload.notification) return;
-
-  const title = payload.data?.title;
-  const body = payload.data?.body;
+  const title = payload.notification?.title || payload.data?.title;
+  const body = payload.notification?.body || payload.data?.body;
   if (!title) return;
 
   const options = {
     body,
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
+    tag: payload.data?.order_id ? `order-${payload.data.order_id}` : 'ready-meen',
+    renotify: true,
     data: payload.data || {},
   };
+
+  // Update app badge count
+  if (self.navigator?.setAppBadge) {
+    self.navigator.setAppBadge();
+  }
 
   self.registration.showNotification(title, options);
 });
@@ -49,4 +52,33 @@ self.addEventListener('notificationclick', (event) => {
       return clients.openWindow(url);
     })
   );
+});
+
+// Handle push events directly as fallback
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  try {
+    const payload = event.data.json();
+    const title = payload.notification?.title || payload.data?.title;
+    const body = payload.notification?.body || payload.data?.body;
+    if (!title) return;
+
+    const options = {
+      body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: payload.data?.order_id ? `order-${payload.data.order_id}` : 'ready-meen',
+      renotify: true,
+      data: payload.data || {},
+    };
+
+    if (self.navigator?.setAppBadge) {
+      self.navigator.setAppBadge();
+    }
+
+    event.waitUntil(self.registration.showNotification(title, options));
+  } catch (e) {
+    // not JSON, ignore
+  }
 });

@@ -6,11 +6,8 @@ export const FISH_CATEGORIES = [
 ];
 
 export const CUTTING_TYPES = [
-  { id: 'whole', label: 'Whole Fish', description: 'Complete fish, uncleaned', priceMultiplier: 1 },
-  { id: 'cleaned', label: 'Cleaned', description: 'Scaled and gutted', priceMultiplier: 1.1 },
-  { id: 'steaks', label: 'Steaks', description: 'Cross-cut pieces', priceMultiplier: 1.2 },
-  { id: 'fillets', label: 'Fillets', description: 'Boneless fillets', priceMultiplier: 1.4 },
-  { id: 'cubes', label: 'Cubes', description: 'Cut into cubes', priceMultiplier: 1.3 },
+  { id: 'curry_cut', label: 'Curry Cut', description: 'Pieces for curry', priceMultiplier: 1 },
+  { id: 'biriyani_cut', label: 'Biriyani Cut', description: 'Pieces for biriyani', priceMultiplier: 1 },
 ];
 
 export const STATUS_FLOW = {
