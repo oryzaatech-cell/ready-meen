@@ -17,11 +17,18 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Background messages — update badge
+// Background messages — update badge and notify clients
 messaging.onBackgroundMessage((payload) => {
-  if (self.navigator?.setAppBadge) {
-    self.navigator.setAppBadge();
-  }
+  // Try setting badge directly
+  try { navigator.setAppBadge(); } catch (e) {}
+
+  // Notify all open windows to refresh badge count
+  self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+    windowClients.forEach((client) => {
+      client.postMessage({ type: 'FCM_PUSH_RECEIVED' });
+    });
+  });
+
   // webpush.notification in the FCM payload auto-shows the notification,
   // so we only manually show for data-only messages
   if (!payload.notification) {

@@ -67,13 +67,22 @@ export function NotificationProvider({ children }) {
     return unsubscribe;
   }, [isAuthenticated, fetchNotifications]);
 
-  // Refresh on realtime order updates + window focus
+  // Refresh on realtime order updates + window focus + SW push messages
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchNotifications();
     const onFocus = () => fetchNotifications();
+    const onSWMessage = (event) => {
+      if (event.data?.type === 'FCM_PUSH_RECEIVED') {
+        fetchNotifications();
+      }
+    };
     window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
+    navigator.serviceWorker?.addEventListener('message', onSWMessage);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      navigator.serviceWorker?.removeEventListener('message', onSWMessage);
+    };
   }, [isAuthenticated, fetchNotifications, orderVersion]);
 
   const markAllRead = useCallback(async () => {
