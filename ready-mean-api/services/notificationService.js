@@ -18,7 +18,10 @@ async function initFirebase() {
       serviceAccount = JSON.parse(readFileSync(process.env.FIREBASE_SERVICE_ACCOUNT_PATH, 'utf8'));
     }
 
-    if (!serviceAccount) return false;
+    if (!serviceAccount) {
+      console.warn('FCM: No FIREBASE_SERVICE_ACCOUNT or FIREBASE_SERVICE_ACCOUNT_PATH configured');
+      return false;
+    }
 
     const mod = await import('firebase-admin');
     firebaseAdmin = mod.default;
@@ -26,9 +29,10 @@ async function initFirebase() {
       credential: firebaseAdmin.credential.cert(serviceAccount),
     });
     firebaseInitialized = true;
+    console.log('FCM: Firebase Admin initialized successfully');
     return true;
   } catch (err) {
-    console.warn('Firebase init skipped:', err.message);
+    console.error('FCM: Firebase init FAILED:', err.message);
     return false;
   }
 }
@@ -104,11 +108,14 @@ export async function sendNotification(userId, { title, body, data = {}, role = 
       }
     }
 
-    if (!fcmToken) return;
+    if (!fcmToken) {
+      console.warn(`FCM: No token found for ${role} id=${userId}`);
+      return;
+    }
+
+    console.log(`FCM: Sending push to ${role} id=${userId}, token=${fcmToken.substring(0, 20)}...`);
 
     // Send as data-only message so the service worker always controls display.
-    // Including `notification` key causes the browser to auto-handle it and
-    // skip onBackgroundMessage, which breaks badge and custom notification display.
     const stringData = {};
     for (const [k, v] of Object.entries(data)) {
       stringData[k] = String(v);
@@ -116,7 +123,7 @@ export async function sendNotification(userId, { title, body, data = {}, role = 
     stringData.title = title;
     stringData.body = body;
 
-    await firebaseAdmin.messaging().send({
+    const result = await firebaseAdmin.messaging().send({
       token: fcmToken,
       data: stringData,
       webpush: {
@@ -130,8 +137,9 @@ export async function sendNotification(userId, { title, body, data = {}, role = 
         payload: { aps: { 'content-available': 1, alert: { title, body }, sound: 'default', badge: 1 } },
       },
     });
+    console.log(`FCM: Push sent successfully, messageId=${result}`);
   } catch (err) {
-    console.warn('Push notification failed:', err.message);
+    console.error('FCM: Push notification failed:', err.code, err.message);
     // Clear stale token only from the table it was found in
     if (err.code === 'messaging/registration-token-not-registered' ||
         err.code === 'messaging/invalid-registration-token') {

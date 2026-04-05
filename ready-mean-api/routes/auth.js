@@ -395,6 +395,7 @@ router.put('/fcm-token', authenticateUser, async (req, res) => {
     if (!token) return res.status(400).json({ error: 'Token is required' });
 
     const table = req.user.role === 'vendor' ? 'vendor_info' : 'user_info';
+    console.log(`FCM token save: ${req.user.role} id=${req.user.db_id} table=${table} token=${token.substring(0, 20)}...`);
     const { error } = await supabase
       .from(table)
       .update({ fcm_token: token })
@@ -405,6 +406,7 @@ router.put('/fcm-token', authenticateUser, async (req, res) => {
       return res.status(500).json({ error: 'Failed to save token' });
     }
 
+    console.log(`FCM token saved successfully for ${req.user.role} id=${req.user.db_id}`);
     res.json({ success: true });
   } catch (err) {
     console.error('FCM token route error:', err);
