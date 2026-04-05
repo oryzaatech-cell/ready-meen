@@ -53,7 +53,9 @@ export async function requestNotificationPermission() {
     const tokenOptions = { vapidKey };
     if ('serviceWorker' in navigator) {
       try {
-        const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          scope: '/firebase-cloud-messaging-push-scope',
+        });
         tokenOptions.serviceWorkerRegistration = swReg;
       } catch (swErr) {
         console.warn('Firebase SW registration failed:', swErr.message);
